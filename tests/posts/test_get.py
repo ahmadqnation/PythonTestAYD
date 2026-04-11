@@ -23,3 +23,21 @@ def test_hent_comments_til_post():
     assert response.status_code == 200
     assert len(response.json()) > 0
     assert "email" in response.json()[0]
+
+def test_hent_sidste_gyldige_post():
+    response = get("/posts/100")
+    assert response.status_code == 200
+
+def test_hent_post_med_negativt_id():
+    response = get("/posts/-1")
+    assert response.status_code == 404
+
+def test_hent_post_med_tekst_som_id():
+    response = get("/posts/abc")
+    assert response.status_code == 404
+
+def test_valider_felter_i_post():
+    response = get("/posts/1")
+    post = response.json()
+    assert response.status_code == 200
+    assert all(felt in post for felt in ["id", "userId", "title", "body"])

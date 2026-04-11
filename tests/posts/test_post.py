@@ -1,5 +1,11 @@
+import allure
 from helpers.api_client import post
 
+
+@allure.feature("Posts API")
+@allure.story("POST")
+@allure.title("Opret post med alle gyldige felter")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Opretter et post med alle gyldige felter\nForventet: HTTP 201 og response indeholder den sendte titel")
 def test_opret_post(new_post):
     """
     Testdesign: Ækvivalenspartitionering
@@ -12,6 +18,11 @@ def test_opret_post(new_post):
     assert response.status_code == 201
     assert response.json()["title"] == "Test titel"
 
+
+@allure.feature("Posts API")
+@allure.story("POST")
+@allure.title("Opret post uden titel")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Opretter et post uden titel-feltet (ugyldig partition)\nForventet: HTTP 201 og title er fraværende eller tom")
 def test_opret_post_uden_titel():
     """
     Testdesign: Ækvivalenspartitionering
@@ -25,6 +36,11 @@ def test_opret_post_uden_titel():
     assert response.status_code == 201
     assert "title" not in response.json() or response.json().get("title") == ""
 
+
+@allure.feature("Posts API")
+@allure.story("POST")
+@allure.title("Opret post uden body")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Opretter et post uden body-feltet (ugyldig partition)\nForventet: HTTP 201 og body er fraværende eller tom")
 def test_opret_post_uden_body(new_post):
     """
     Testdesign: Ækvivalenspartitionering
@@ -37,6 +53,11 @@ def test_opret_post_uden_body(new_post):
     assert response.status_code == 201
     assert "body" not in response.json() or response.json().get("body") == ""
 
+
+@allure.feature("Posts API")
+@allure.story("POST")
+@allure.title("Opret post med tomt objekt")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Opretter et post med et tomt objekt (ugyldig partition)\nForventet: HTTP 201 — JSONPlaceholder validerer ikke felter")
 def test_opret_tomt_post():
     """
     Testdesign: Ækvivalenspartitionering
@@ -47,6 +68,11 @@ def test_opret_tomt_post():
     response = post("/posts", {})
     assert response.status_code == 201
 
+
+@allure.feature("Posts API")
+@allure.story("POST")
+@allure.title("Valider felter i POST response")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Validerer at response indeholder alle forventede felter efter oprettelse\nForventet: HTTP 201 og response indeholder id, title, body, userId")
 def test_valider_felter_i_response(new_post):
     """
     Testdesign: Ækvivalenspartitionering
@@ -59,6 +85,11 @@ def test_valider_felter_i_response(new_post):
     assert response.status_code == 201
     assert all(felt in body for felt in ["id", "title", "body", "userId"])
 
+
+@allure.feature("Posts API")
+@allure.story("POST")
+@allure.title("Opret post med lang titel (500 tegn)")
+@allure.description("Testdesign: Grænseværdianalyse\nBeskrivelse: Opretter et post med en titel på 500 tegn (øvre grænse)\nForventet: HTTP 201 og titel i response er 500 tegn lang")
 def test_opret_post_med_lang_titel():
     """
     Testdesign: Grænseværdianalyse

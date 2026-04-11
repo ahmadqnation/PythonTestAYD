@@ -1,5 +1,11 @@
+import allure
 from helpers.api_client import put
 
+
+@allure.feature("Posts API")
+@allure.story("PUT")
+@allure.title("Opdater post med alle gyldige felter")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Opdaterer et eksisterende post med alle gyldige felter\nForventet: HTTP 200, titel og id matcher de sendte værdier")
 def test_opdater_post(new_post):
     """
     Testdesign: Ækvivalenspartitionering
@@ -14,6 +20,11 @@ def test_opdater_post(new_post):
     assert response.json()["title"] == "Opdateret titel"
     assert response.json()["id"] == 1
 
+
+@allure.feature("Posts API")
+@allure.story("PUT")
+@allure.title("Opdater post kun titel")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Opdaterer et post med kun titel specificeret\nForventet: HTTP 200 og titel matcher den sendte værdi")
 def test_opdater_post_kun_titel():
     """
     Testdesign: Ækvivalenspartitionering
@@ -27,6 +38,11 @@ def test_opdater_post_kun_titel():
     assert response.status_code == 200
     assert response.json()["title"] == "Ny titel"
 
+
+@allure.feature("Posts API")
+@allure.story("PUT")
+@allure.title("Opdater post der ikke findes")
+@allure.description("Testdesign: Negativ test\nBeskrivelse: Forsøger at opdatere et post med et id der ikke eksisterer\nForventet: HTTP 404 eller 500")
 def test_opdater_post_der_ikke_findes(new_post):
     """
     Testdesign: Negativ test
@@ -39,6 +55,11 @@ def test_opdater_post_der_ikke_findes(new_post):
     # JSONPlaceholder returnerer 500 for ikke-eksisterende ressourcer ved PUT
     assert response.status_code in [404, 500]
 
+
+@allure.feature("Posts API")
+@allure.story("PUT")
+@allure.title("Opdater post uden body")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Opdaterer et post uden body-feltet (ugyldig partition)\nForventet: HTTP 200 og body er fraværende eller tom")
 def test_opdater_post_uden_body(new_post):
     """
     Testdesign: Ækvivalenspartitionering
@@ -51,6 +72,11 @@ def test_opdater_post_uden_body(new_post):
     assert response.status_code == 200
     assert "body" not in response.json() or response.json().get("body") == ""
 
+
+@allure.feature("Posts API")
+@allure.story("PUT")
+@allure.title("Opdater post med tomt objekt")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Opdaterer et post med et tomt objekt (ugyldig partition)\nForventet: HTTP 200 — JSONPlaceholder validerer ikke felter")
 def test_opdater_tomt_post():
     """
     Testdesign: Ækvivalenspartitionering
@@ -61,6 +87,11 @@ def test_opdater_tomt_post():
     response = put("/posts/1", {})
     assert response.status_code == 200
 
+
+@allure.feature("Posts API")
+@allure.story("PUT")
+@allure.title("Opdater sidste gyldige post (id = 100)")
+@allure.description("Testdesign: Grænseværdianalyse\nBeskrivelse: Opdaterer det sidste gyldige post ved øvre grænse (id = 100)\nForventet: HTTP 200 og id i response er 100")
 def test_opdater_sidste_gyldige_post(new_post):
     """
     Testdesign: Grænseværdianalyse
@@ -73,6 +104,11 @@ def test_opdater_sidste_gyldige_post(new_post):
     assert response.status_code == 200
     assert response.json()["id"] == 100
 
+
+@allure.feature("Posts API")
+@allure.story("PUT")
+@allure.title("Valider felter i PUT response")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Validerer at response indeholder alle forventede felter efter opdatering\nForventet: HTTP 200 og response indeholder id, title, body, userId")
 def test_valider_felter_i_response(new_post):
     """
     Testdesign: Ækvivalenspartitionering

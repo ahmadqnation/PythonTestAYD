@@ -1,5 +1,11 @@
+import allure
 from helpers.api_client import get
 
+
+@allure.feature("Posts API")
+@allure.story("GET")
+@allure.title("Hent alle posts")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Henter alle posts fra /posts endpointet\nForventet: HTTP 200 og en liste med mindst ét post")
 def test_hent_alle_posts():
     """
     Testdesign: Ækvivalenspartitionering
@@ -12,6 +18,11 @@ def test_hent_alle_posts():
     assert response.status_code == 200
     assert len(response.json()) > 0
 
+
+@allure.feature("Posts API")
+@allure.story("GET")
+@allure.title("Hent enkelt post med gyldigt id")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Henter et enkelt post med gyldigt id\nForventet: HTTP 200 og post med id = 1")
 def test_hent_enkelt_post():
     """
     Testdesign: Ækvivalenspartitionering
@@ -24,6 +35,11 @@ def test_hent_enkelt_post():
     assert response.status_code == 200
     assert response.json()["id"] == 1
 
+
+@allure.feature("Posts API")
+@allure.story("GET")
+@allure.title("Hent post der ikke findes")
+@allure.description("Testdesign: Negativ test\nBeskrivelse: Forsøger at hente et post med et id der ikke eksisterer\nForventet: HTTP 404")
 def test_hent_post_der_ikke_findes():
     """
     Testdesign: Negativ test
@@ -35,6 +51,11 @@ def test_hent_post_der_ikke_findes():
     print(f"\nResponse: {response.status_code}")
     assert response.status_code == 404
 
+
+@allure.feature("Posts API")
+@allure.story("GET")
+@allure.title("Hent kommentarer til et post")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Henter kommentarer tilknyttet et gyldigt post\nForventet: HTTP 200, mindst én kommentar med feltet email")
 def test_hent_comments_til_post():
     """
     Testdesign: Ækvivalenspartitionering
@@ -48,6 +69,11 @@ def test_hent_comments_til_post():
     assert len(response.json()) > 0
     assert "email" in response.json()[0]
 
+
+@allure.feature("Posts API")
+@allure.story("GET")
+@allure.title("Hent sidste gyldige post (id = 100)")
+@allure.description("Testdesign: Grænseværdianalyse\nBeskrivelse: Henter det sidste gyldige post ved øvre grænse (id = 100)\nForventet: HTTP 200")
 def test_hent_sidste_gyldige_post():
     """
     Testdesign: Grænseværdianalyse
@@ -58,6 +84,11 @@ def test_hent_sidste_gyldige_post():
     response = get("/posts/100")
     assert response.status_code == 200
 
+
+@allure.feature("Posts API")
+@allure.story("GET")
+@allure.title("Hent post med negativt id")
+@allure.description("Testdesign: Grænseværdianalyse\nBeskrivelse: Forsøger at hente et post med negativt id (under nedre grænse)\nForventet: HTTP 404")
 def test_hent_post_med_negativt_id():
     """
     Testdesign: Grænseværdianalyse
@@ -68,6 +99,11 @@ def test_hent_post_med_negativt_id():
     response = get("/posts/-1")
     assert response.status_code == 404
 
+
+@allure.feature("Posts API")
+@allure.story("GET")
+@allure.title("Hent post med tekst som id")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Forsøger at hente et post med tekst som id (ugyldig partition)\nForventet: HTTP 404")
 def test_hent_post_med_tekst_som_id():
     """
     Testdesign: Ækvivalenspartitionering
@@ -78,6 +114,11 @@ def test_hent_post_med_tekst_som_id():
     response = get("/posts/abc")
     assert response.status_code == 404
 
+
+@allure.feature("Posts API")
+@allure.story("GET")
+@allure.title("Valider felter i post response")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Validerer at et post indeholder alle forventede felter\nForventet: HTTP 200 og response indeholder id, userId, title, body")
 def test_valider_felter_i_post():
     """
     Testdesign: Ækvivalenspartitionering

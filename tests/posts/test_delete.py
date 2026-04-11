@@ -1,5 +1,11 @@
+import allure
 from helpers.api_client import delete
 
+
+@allure.feature("Posts API")
+@allure.story("DELETE")
+@allure.title("Slet eksisterende post")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Sletter et eksisterende post med gyldigt id\nForventet: HTTP 200")
 def test_slet_post():
     """
     Testdesign: Ækvivalenspartitionering
@@ -11,6 +17,11 @@ def test_slet_post():
     print(f"\nResponse status: {response.status_code}")
     assert response.status_code == 200
 
+
+@allure.feature("Posts API")
+@allure.story("DELETE")
+@allure.title("Slet post der ikke findes")
+@allure.description("Testdesign: Negativ test\nBeskrivelse: Forsøger at slette et post med et id der ikke eksisterer\nForventet: HTTP 200 — JSONPlaceholder returnerer 200 for alle DELETE requests")
 def test_slet_post_der_ikke_findes():
     """
     Testdesign: Negativ test
@@ -23,6 +34,11 @@ def test_slet_post_der_ikke_findes():
     # JSONPlaceholder returnerer 200 selv for ikke-eksisterende ressourcer
     assert response.status_code == 200
 
+
+@allure.feature("Posts API")
+@allure.story("DELETE")
+@allure.title("Slet sidste gyldige post (id = 100)")
+@allure.description("Testdesign: Grænseværdianalyse\nBeskrivelse: Sletter det sidste gyldige post ved øvre grænse (id = 100)\nForventet: HTTP 200")
 def test_slet_sidste_gyldige_post():
     """
     Testdesign: Grænseværdianalyse
@@ -33,6 +49,11 @@ def test_slet_sidste_gyldige_post():
     response = delete("/posts/100")
     assert response.status_code == 200
 
+
+@allure.feature("Posts API")
+@allure.story("DELETE")
+@allure.title("Slet post med negativt id")
+@allure.description("Testdesign: Grænseværdianalyse\nBeskrivelse: Forsøger at slette et post med negativt id (under nedre grænse)\nForventet: HTTP 200 — JSONPlaceholder validerer ikke id-værdier")
 def test_slet_post_med_negativt_id():
     """
     Testdesign: Grænseværdianalyse
@@ -43,6 +64,11 @@ def test_slet_post_med_negativt_id():
     response = delete("/posts/-1")
     assert response.status_code == 200
 
+
+@allure.feature("Posts API")
+@allure.story("DELETE")
+@allure.title("Slet post med tekst som id")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Forsøger at slette et post med tekst som id (ugyldig partition)\nForventet: HTTP 200 — JSONPlaceholder validerer ikke id-typer")
 def test_slet_post_med_tekst_som_id():
     """
     Testdesign: Ækvivalenspartitionering
@@ -53,6 +79,11 @@ def test_slet_post_med_tekst_som_id():
     response = delete("/posts/abc")
     assert response.status_code == 200
 
+
+@allure.feature("Posts API")
+@allure.story("DELETE")
+@allure.title("Valider tomt response ved DELETE")
+@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Validerer at response ved DELETE er et tomt objekt\nForventet: HTTP 200 og response body er {}")
 def test_valider_tomt_response():
     """
     Testdesign: Ækvivalenspartitionering

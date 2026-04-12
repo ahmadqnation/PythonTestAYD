@@ -1,0 +1,35 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout kode
+        uses: actions/checkout@v4
+
+      - name: Sæt Python 3.14 op
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Installer dependencies
+        run: pip install -r requirements.txt
+
+      - name: Kør pytest med Allure
+        run: pytest --alluredir=reports/allure-results
+
+      - name: Gem Allure resultater som artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: reports/allure-results/

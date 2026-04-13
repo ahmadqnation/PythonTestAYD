@@ -1,7 +1,10 @@
+import pytest
 import allure
 from helpers.api_client import put
 
 
+@pytest.mark.smoke
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("PUT")
 @allure.title("Opdater post med alle gyldige felter")
@@ -21,6 +24,7 @@ def test_opdater_post(new_post):
     assert response.json()["id"] == 1
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("PUT")
 @allure.title("Opdater post kun titel")
@@ -39,6 +43,8 @@ def test_opdater_post_kun_titel():
     assert response.json()["title"] == "Ny titel"
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Posts API")
 @allure.story("PUT")
 @allure.title("Opdater post der ikke findes")
@@ -56,6 +62,8 @@ def test_opdater_post_der_ikke_findes(new_post):
     assert response.status_code in [404, 500]
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Posts API")
 @allure.story("PUT")
 @allure.title("Opdater post uden body")
@@ -73,6 +81,8 @@ def test_opdater_post_uden_body(new_post):
     assert "body" not in response.json() or response.json().get("body") == ""
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Posts API")
 @allure.story("PUT")
 @allure.title("Opdater post med tomt objekt")
@@ -88,6 +98,7 @@ def test_opdater_tomt_post():
     assert response.status_code == 200
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("PUT")
 @allure.title("Opdater sidste gyldige post (id = 100)")
@@ -105,6 +116,7 @@ def test_opdater_sidste_gyldige_post(new_post):
     assert response.json()["id"] == 100
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("PUT")
 @allure.title("Valider felter i PUT response")

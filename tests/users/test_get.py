@@ -1,7 +1,10 @@
+import pytest
 import allure
 from helpers.api_client import get
 
 
+@pytest.mark.smoke
+@pytest.mark.regression
 @allure.feature("Users API")
 @allure.story("GET")
 @allure.title("Hent alle users")
@@ -19,6 +22,7 @@ def test_hent_alle_users():
     assert len(response.json()) > 0
 
 
+@pytest.mark.regression
 @allure.feature("Users API")
 @allure.story("GET")
 @allure.title("Hent enkelt user med gyldigt id")
@@ -36,6 +40,8 @@ def test_hent_enkelt_user():
     assert response.json()["id"] == 1
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Users API")
 @allure.story("GET")
 @allure.title("Hent user der ikke findes")
@@ -52,6 +58,7 @@ def test_hent_user_der_ikke_findes():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
 @allure.feature("Users API")
 @allure.story("GET")
 @allure.title("Hent sidste gyldige user (id = 10)")
@@ -67,6 +74,8 @@ def test_hent_sidste_gyldige_user():
     assert response.status_code == 200
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Users API")
 @allure.story("GET")
 @allure.title("Hent user med negativt id")
@@ -82,6 +91,8 @@ def test_hent_user_med_negativt_id():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Users API")
 @allure.story("GET")
 @allure.title("Hent user med tekst som id")
@@ -97,6 +108,7 @@ def test_hent_user_med_tekst_som_id():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
 @allure.feature("Users API")
 @allure.story("GET")
 @allure.title("Valider felter i user response")
@@ -114,6 +126,7 @@ def test_valider_felter_i_user():
     assert all(felt in user for felt in ["id", "name", "username", "email"])
 
 
+@pytest.mark.regression
 @allure.feature("Users API")
 @allure.story("GET")
 @allure.title("Hent posts for en user")

@@ -8,6 +8,10 @@ on:
     branches:
       - master
 
+permissions:
+  actions: read
+  contents: read
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -28,7 +32,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Hent tidligere Allure historik artifact
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v9
         continue-on-error: true
         with:
           name: allure-results

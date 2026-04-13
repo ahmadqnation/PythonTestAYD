@@ -1,7 +1,10 @@
+import pytest
 import allure
 from helpers.api_client import get
 
 
+@pytest.mark.smoke
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("GET")
 @allure.title("Hent alle posts")
@@ -19,6 +22,7 @@ def test_hent_alle_posts():
     assert len(response.json()) > 0
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("GET")
 @allure.title("Hent enkelt post med gyldigt id")
@@ -36,6 +40,8 @@ def test_hent_enkelt_post():
     assert response.json()["id"] == 1
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Posts API")
 @allure.story("GET")
 @allure.title("Hent post der ikke findes")
@@ -52,6 +58,7 @@ def test_hent_post_der_ikke_findes():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("GET")
 @allure.title("Hent kommentarer til et post")
@@ -70,6 +77,7 @@ def test_hent_comments_til_post():
     assert "email" in response.json()[0]
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("GET")
 @allure.title("Hent sidste gyldige post (id = 100)")
@@ -85,6 +93,8 @@ def test_hent_sidste_gyldige_post():
     assert response.status_code == 200
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Posts API")
 @allure.story("GET")
 @allure.title("Hent post med negativt id")
@@ -100,6 +110,8 @@ def test_hent_post_med_negativt_id():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Posts API")
 @allure.story("GET")
 @allure.title("Hent post med tekst som id")
@@ -115,6 +127,7 @@ def test_hent_post_med_tekst_som_id():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("GET")
 @allure.title("Valider felter i post response")

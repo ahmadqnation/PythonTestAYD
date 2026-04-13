@@ -16,9 +16,12 @@ def run(cmd):
 
 
 def main():
+    marker = sys.argv[1] if len(sys.argv) > 1 else None
+    pytest_cmd = f"pytest -m {marker}" if marker else "pytest"
+
     # 1. Kør pytest (alluredir er konfigureret i pytest.ini)
-    print("Kører pytest...")
-    run("pytest")
+    print(f"Kører pytest{f' -m {marker}' if marker else ''}...")
+    run(pytest_cmd)
 
     # 2. Kopiér historik fra forrige rapport hvis den findes
     if HISTORY_SRC.exists():

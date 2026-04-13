@@ -27,6 +27,20 @@ jobs:
       - name: Installer dependencies
         run: pip install -r requirements.txt
 
+      - name: Hent tidligere Allure historik artifact
+        uses: dawidd6/action-download-artifact@v6
+        continue-on-error: true
+        with:
+          name: allure-results
+          path: allure-history
+
+      - name: Kopiér Allure historik
+        run: |
+          if [ -d "allure-history/history" ]; then
+            mkdir -p reports/allure-results/history
+            cp -r allure-history/history/. reports/allure-results/history/
+          fi
+
       - name: Kør pytest med Allure
         env:
           BASE_URL: ${{ secrets.BASE_URL }}

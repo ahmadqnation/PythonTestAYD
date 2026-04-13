@@ -9,7 +9,7 @@ on:
       - master
 
 permissions:
-  actions: read
+  actions: write
   contents: read
 
 env:
@@ -32,13 +32,13 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Hent tidligere Allure historik artifact
-        uses: actions/download-artifact@v4
+        uses: dawidd6/action-download-artifact@v9
         continue-on-error: true
         with:
           name: allure-results
           path: allure-history
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.before }}
+          workflow: tests.yml
+          if_no_artifact_found: warn
 
       - name: Kopiér Allure historik
         run: |

@@ -1,7 +1,10 @@
+import pytest
 import allure
 from helpers.api_client import get
 
 
+@pytest.mark.smoke
+@pytest.mark.regression
 @allure.feature("Todos API")
 @allure.story("GET")
 @allure.title("Hent alle todos")
@@ -19,6 +22,7 @@ def test_hent_alle_todos():
     assert len(response.json()) > 0
 
 
+@pytest.mark.regression
 @allure.feature("Todos API")
 @allure.story("GET")
 @allure.title("Hent enkelt todo med gyldigt id")
@@ -36,6 +40,8 @@ def test_hent_enkelt_todo():
     assert response.json()["id"] == 1
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Todos API")
 @allure.story("GET")
 @allure.title("Hent todo der ikke findes")
@@ -52,6 +58,7 @@ def test_hent_todo_der_ikke_findes():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
 @allure.feature("Todos API")
 @allure.story("GET")
 @allure.title("Hent sidste gyldige todo (id = 200)")
@@ -67,6 +74,8 @@ def test_hent_sidste_gyldige_todo():
     assert response.status_code == 200
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Todos API")
 @allure.story("GET")
 @allure.title("Hent todo med negativt id")
@@ -82,6 +91,8 @@ def test_hent_todo_med_negativt_id():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Todos API")
 @allure.story("GET")
 @allure.title("Hent todo med tekst som id")
@@ -97,6 +108,7 @@ def test_hent_todo_med_tekst_som_id():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
 @allure.feature("Todos API")
 @allure.story("GET")
 @allure.title("Valider felter i todo response")

@@ -1,7 +1,10 @@
+import pytest
 import allure
 from helpers.api_client import get
 
 
+@pytest.mark.smoke
+@pytest.mark.regression
 @allure.feature("Comments API")
 @allure.story("GET")
 @allure.title("Hent alle comments")
@@ -19,6 +22,7 @@ def test_hent_alle_comments():
     assert len(response.json()) > 0
 
 
+@pytest.mark.regression
 @allure.feature("Comments API")
 @allure.story("GET")
 @allure.title("Hent enkelt comment med gyldigt id")
@@ -36,6 +40,8 @@ def test_hent_enkelt_comment():
     assert response.json()["id"] == 1
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Comments API")
 @allure.story("GET")
 @allure.title("Hent comment der ikke findes")
@@ -52,6 +58,7 @@ def test_hent_comment_der_ikke_findes():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
 @allure.feature("Comments API")
 @allure.story("GET")
 @allure.title("Hent sidste gyldige comment (id = 500)")
@@ -67,6 +74,8 @@ def test_hent_sidste_gyldige_comment():
     assert response.status_code == 200
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Comments API")
 @allure.story("GET")
 @allure.title("Hent comment med negativt id")
@@ -82,6 +91,8 @@ def test_hent_comment_med_negativt_id():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Comments API")
 @allure.story("GET")
 @allure.title("Hent comment med tekst som id")
@@ -97,6 +108,7 @@ def test_hent_comment_med_tekst_som_id():
     assert response.status_code == 404
 
 
+@pytest.mark.regression
 @allure.feature("Comments API")
 @allure.story("GET")
 @allure.title("Valider felter i comment response")
@@ -114,6 +126,7 @@ def test_valider_felter_i_comment():
     assert all(felt in comment for felt in ["id", "postId", "name", "email", "body"])
 
 
+@pytest.mark.regression
 @allure.feature("Comments API")
 @allure.story("GET")
 @allure.title("Hent comments for et post")

@@ -1,7 +1,10 @@
+import pytest
 import allure
 from helpers.api_client import post
 
 
+@pytest.mark.smoke
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("POST")
 @allure.title("Opret post med alle gyldige felter")
@@ -19,6 +22,8 @@ def test_opret_post(new_post):
     assert response.json()["title"] == "Test titel"
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Posts API")
 @allure.story("POST")
 @allure.title("Opret post uden titel")
@@ -37,6 +42,8 @@ def test_opret_post_uden_titel():
     assert "title" not in response.json() or response.json().get("title") == ""
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Posts API")
 @allure.story("POST")
 @allure.title("Opret post uden body")
@@ -54,6 +61,8 @@ def test_opret_post_uden_body(new_post):
     assert "body" not in response.json() or response.json().get("body") == ""
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Posts API")
 @allure.story("POST")
 @allure.title("Opret post med tomt objekt")
@@ -69,6 +78,7 @@ def test_opret_tomt_post():
     assert response.status_code == 201
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("POST")
 @allure.title("Valider felter i POST response")
@@ -86,6 +96,7 @@ def test_valider_felter_i_response(new_post):
     assert all(felt in body for felt in ["id", "title", "body", "userId"])
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("POST")
 @allure.title("Opret post med lang titel (500 tegn)")

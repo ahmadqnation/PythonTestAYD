@@ -1,7 +1,10 @@
+import pytest
 import allure
 from helpers.api_client import delete
 
 
+@pytest.mark.smoke
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("DELETE")
 @allure.title("Slet eksisterende post")
@@ -18,6 +21,8 @@ def test_slet_post():
     assert response.status_code == 200
 
 
+@pytest.mark.regression
+@pytest.mark.negative
 @allure.feature("Posts API")
 @allure.story("DELETE")
 @allure.title("Slet post der ikke findes")
@@ -35,6 +40,7 @@ def test_slet_post_der_ikke_findes():
     assert response.status_code == 200
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("DELETE")
 @allure.title("Slet sidste gyldige post (id = 100)")
@@ -50,6 +56,7 @@ def test_slet_sidste_gyldige_post():
     assert response.status_code == 200
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("DELETE")
 @allure.title("Slet post med negativt id")
@@ -65,6 +72,7 @@ def test_slet_post_med_negativt_id():
     assert response.status_code == 200
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("DELETE")
 @allure.title("Slet post med tekst som id")
@@ -80,6 +88,7 @@ def test_slet_post_med_tekst_som_id():
     assert response.status_code == 200
 
 
+@pytest.mark.regression
 @allure.feature("Posts API")
 @allure.story("DELETE")
 @allure.title("Valider tomt response ved DELETE")

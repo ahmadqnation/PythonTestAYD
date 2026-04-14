@@ -14,11 +14,6 @@ def health_check():
     return {"status": "ok", "version": "1.0.0"}
 
 
-@app.get("/health")
-def health_check():
-    return {"status": "ok", "version": "1.0.0"}
-
-
 @app.get("/todos", response_model=list[Todo])
 def get_todos(db: Session = Depends(get_db)):
     return db.query(TodoDB).all()

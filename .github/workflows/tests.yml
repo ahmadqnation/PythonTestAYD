@@ -67,7 +67,7 @@ jobs:
 
   deploy:
     needs: test
-    if: ${{ !cancelled() }}
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
     runs-on: ubuntu-latest
     environment:
       name: github-pages

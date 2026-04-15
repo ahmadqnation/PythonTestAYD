@@ -3,6 +3,7 @@ import allure
 import requests
 from tests.todo_api.conftest import BASE_URL
 from api.models_db import TodoDB
+from tests.todo_api.diagrams import delete_diagram, negative_delete_diagram
 
 
 @pytest.mark.smoke
@@ -50,6 +51,8 @@ def test_slet_todo(new_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(delete_diagram(deleted_id), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
+
 
 @pytest.mark.regression
 @pytest.mark.negative
@@ -57,16 +60,31 @@ def test_slet_todo(new_todo, db_session):
 @allure.story("DELETE")
 @allure.title("Slet todo der ikke findes")
 @allure.description("Testdesign: Negativ test\nBeskrivelse: Forsøger at slette en todo med et id der ikke eksisterer\nForventet: HTTP 404")
-def test_slet_todo_der_ikke_findes():
+def test_slet_todo_der_ikke_findes(db_session):
     """
     Testdesign: Negativ test
     Beskrivelse: Forsøger at slette en todo med et id der ikke eksisterer
     Forudsætning: Todo med id 99999 eksisterer ikke i API'et
     Forventet resultat: HTTP 404
     """
+    db_todo = db_session.query(TodoDB).filter_by(id=99999).first()
+    assert db_todo is None
+
     response = requests.delete(f"{BASE_URL}/todos/99999")
     print(f"\nResponse status: {response.status_code}")
     assert response.status_code == 404
+
+    allure.attach(
+        '<table border="1" style="border-collapse: collapse; width: 100%;">'
+        '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
+        '<tr><td style="padding: 8px;">db_todo is None</td><td style="padding: 8px;">ID 99999 eksisterer ikke i databasen</td></tr>'
+        '<tr><td style="padding: 8px;">response.status_code == 404</td><td style="padding: 8px;">HTTP 404</td></tr>'
+        "</table>",
+        name="Database assertions",
+        attachment_type=allure.attachment_type.HTML
+    )
+
+    allure.attach(negative_delete_diagram(99999), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
 @pytest.mark.regression
@@ -112,3 +130,5 @@ def test_valider_tomt_response(new_todo, db_session):
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML
     )
+
+    allure.attach(delete_diagram(deleted_id), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)

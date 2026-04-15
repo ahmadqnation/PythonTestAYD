@@ -3,6 +3,7 @@ import allure
 import requests
 from tests.todo_api.conftest import BASE_URL
 from api.models_db import TodoDB
+from tests.todo_api.diagrams import post_diagram, negative_post_diagram
 
 
 @pytest.mark.smoke
@@ -52,6 +53,8 @@ def test_opret_todo(new_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(post_diagram(new_todo["title"], new_todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
+
     requests.delete(f"{BASE_URL}/todos/{todo['id']}")
 
 
@@ -61,16 +64,35 @@ def test_opret_todo(new_todo, db_session):
 @allure.story("POST")
 @allure.title("Opret todo uden titel")
 @allure.description("Testdesign: Negativ test\nBeskrivelse: Forsøger at oprette en todo uden det påkrævede titel-felt\nForventet: HTTP 422")
-def test_opret_todo_uden_titel():
+def test_opret_todo_uden_titel(db_session):
     """
     Testdesign: Negativ test
     Beskrivelse: Forsøger at oprette en todo uden det påkrævede titel-felt
     Forudsætning: API'et kræver title-feltet
     Forventet resultat: HTTP 422 (FastAPI validering)
     """
+    count_before = db_session.query(TodoDB).count()
+
     response = requests.post(f"{BASE_URL}/todos", json={"completed": False})
     print(f"\nResponse: {response.status_code}")
     assert response.status_code == 422
+
+    db_session.expire_all()
+    count_after = db_session.query(TodoDB).count()
+    assert count_after == count_before
+
+    allure.attach(
+        '<table border="1" style="border-collapse: collapse; width: 100%;">'
+        '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
+        '<tr><td style="padding: 8px;">count_before (baseline)</td><td style="padding: 8px;">Registrerer antal rækker inden kaldet</td></tr>'
+        '<tr><td style="padding: 8px;">response.status_code == 422</td><td style="padding: 8px;">HTTP 422 (FastAPI validerer manglende felt)</td></tr>'
+        '<tr><td style="padding: 8px;">count_after == count_before</td><td style="padding: 8px;">Ingen rækker oprettet i databasen</td></tr>'
+        "</table>",
+        name="Database assertions",
+        attachment_type=allure.attachment_type.HTML
+    )
+
+    allure.attach(negative_post_diagram("title"), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
 @pytest.mark.regression
@@ -118,6 +140,8 @@ def test_opret_todo_completed_false_som_default(db_session):
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML
     )
+
+    allure.attach(post_diagram(todo_input["title"], todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
     requests.delete(f"{BASE_URL}/todos/{todo['id']}")
 
@@ -168,6 +192,8 @@ def test_opret_todo_med_completed_true(db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(post_diagram(todo_input["title"], todo_input["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
+
     requests.delete(f"{BASE_URL}/todos/{todo['id']}")
 
 
@@ -215,6 +241,8 @@ def test_valider_felter_i_response(new_todo, db_session):
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML
     )
+
+    allure.attach(post_diagram(new_todo["title"], new_todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
     requests.delete(f"{BASE_URL}/todos/{todo['id']}")
 
@@ -264,5 +292,7 @@ def test_opret_todo_med_lang_titel(db_session):
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML
     )
+
+    allure.attach(post_diagram(lang_titel, todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
     requests.delete(f"{BASE_URL}/todos/{todo['id']}")

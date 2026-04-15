@@ -3,6 +3,7 @@ import allure
 import requests
 from tests.todo_api.conftest import BASE_URL
 from api.models_db import TodoDB
+from tests.todo_api.diagrams import put_diagram, negative_put_diagram
 
 
 @pytest.mark.smoke
@@ -52,6 +53,8 @@ def test_opdater_todo_titel(created_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(put_diagram("Opdateret titel", False), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
+
 
 @pytest.mark.regression
 @allure.feature("Todo API")
@@ -98,6 +101,8 @@ def test_opdater_todo_completed(created_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(put_diagram(created_todo["title"], True), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
+
 
 @pytest.mark.regression
 @pytest.mark.negative
@@ -105,16 +110,31 @@ def test_opdater_todo_completed(created_todo, db_session):
 @allure.story("PUT")
 @allure.title("Opdater todo der ikke findes")
 @allure.description("Testdesign: Negativ test\nBeskrivelse: Forsøger at opdatere en todo med et id der ikke eksisterer\nForventet: HTTP 404")
-def test_opdater_todo_der_ikke_findes():
+def test_opdater_todo_der_ikke_findes(db_session):
     """
     Testdesign: Negativ test
     Beskrivelse: Forsøger at opdatere en todo med et id der ikke eksisterer
     Forudsætning: Todo med id 99999 eksisterer ikke i API'et
     Forventet resultat: HTTP 404
     """
+    db_todo = db_session.query(TodoDB).filter_by(id=99999).first()
+    assert db_todo is None
+
     response = requests.put(f"{BASE_URL}/todos/99999", json={"title": "Findes ikke"})
     print(f"\nResponse status: {response.status_code}")
     assert response.status_code == 404
+
+    allure.attach(
+        '<table border="1" style="border-collapse: collapse; width: 100%;">'
+        '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
+        '<tr><td style="padding: 8px;">db_todo is None</td><td style="padding: 8px;">ID 99999 eksisterer ikke i databasen</td></tr>'
+        '<tr><td style="padding: 8px;">response.status_code == 404</td><td style="padding: 8px;">HTTP 404</td></tr>'
+        "</table>",
+        name="Database assertions",
+        attachment_type=allure.attachment_type.HTML
+    )
+
+    allure.attach(negative_put_diagram(99999), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
 @pytest.mark.regression
@@ -162,6 +182,8 @@ def test_opdater_todo_med_tomt_objekt(created_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(put_diagram(created_todo["title"], created_todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
+
 
 @pytest.mark.regression
 @allure.feature("Todo API")
@@ -208,3 +230,5 @@ def test_valider_felter_i_response(created_todo, db_session):
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML
     )
+
+    allure.attach(put_diagram("Opdateret", False), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)

@@ -53,6 +53,7 @@ jobs:
       - name: Kør pytest med Allure
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: pytest --alluredir=reports/allure-results
 
       - name: Gem Allure resultater som artifact

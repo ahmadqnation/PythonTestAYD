@@ -2,6 +2,7 @@ import pytest
 import allure
 import requests
 from tests.todo_api.conftest import BASE_URL
+from api.models_db import TodoDB
 
 
 @pytest.mark.smoke
@@ -9,8 +10,12 @@ from tests.todo_api.conftest import BASE_URL
 @allure.feature("Todo API")
 @allure.story("DELETE")
 @allure.title("Slet eksisterende todo")
-@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Sletter en eksisterende todo med gyldigt id\nForventet: HTTP 200")
-def test_slet_todo(new_todo):
+@allure.description(
+    "Testdesign: Ækvivalenspartitionering<br>"
+    "Beskrivelse: Sletter en eksisterende todo med gyldigt id<br>"
+    "Forventet: HTTP 200"
+)
+def test_slet_todo(new_todo, db_session):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Sletter en eksisterende todo med gyldigt id
@@ -18,9 +23,32 @@ def test_slet_todo(new_todo):
     Forventet resultat: HTTP 200
     """
     created = requests.post(f"{BASE_URL}/todos", json=new_todo).json()
-    response = requests.delete(f"{BASE_URL}/todos/{created['id']}")
+    deleted_id = created["id"]
+
+    db_todo_before = db_session.query(TodoDB).filter_by(id=deleted_id).first()
+    assert db_todo_before is not None
+
+    response = requests.delete(f"{BASE_URL}/todos/{deleted_id}")
     print(f"\nResponse status: {response.status_code}")
     assert response.status_code == 200
+
+    db_session.expire_all()
+    db_todo = db_session.query(TodoDB).filter_by(id=deleted_id).first()
+    assert db_todo is None
+    count = db_session.query(TodoDB).filter_by(id=deleted_id).count()
+    assert count == 0
+
+    allure.attach(
+        '<table border="1" style="border-collapse: collapse; width: 100%;">'
+        '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
+        '<tr><td style="padding: 8px;">db_todo_before is not None</td><td style="padding: 8px;">Rækken eksisterede inden sletning</td></tr>'
+        '<tr><td style="padding: 8px;">deleted_id > 0</td><td style="padding: 8px;">ID var positivt</td></tr>'
+        '<tr><td style="padding: 8px;">db_todo is None</td><td style="padding: 8px;">Rækken er slettet fra databasen</td></tr>'
+        '<tr><td style="padding: 8px;">count == 0</td><td style="padding: 8px;">Query returnerer nul rækker</td></tr>'
+        "</table>",
+        name="Database assertions",
+        attachment_type=allure.attachment_type.HTML
+    )
 
 
 @pytest.mark.regression
@@ -45,8 +73,12 @@ def test_slet_todo_der_ikke_findes():
 @allure.feature("Todo API")
 @allure.story("DELETE")
 @allure.title("Valider tomt response ved DELETE")
-@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Validerer at response ved DELETE er et tomt objekt\nForventet: HTTP 200 og response body er {}")
-def test_valider_tomt_response(new_todo):
+@allure.description(
+    "Testdesign: Ækvivalenspartitionering<br>"
+    "Beskrivelse: Validerer at response ved DELETE er et tomt objekt<br>"
+    "Forventet: HTTP 200 og response body er {}"
+)
+def test_valider_tomt_response(new_todo, db_session):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Validerer at response ved DELETE er et tomt objekt
@@ -54,6 +86,29 @@ def test_valider_tomt_response(new_todo):
     Forventet resultat: HTTP 200 og response body er {}
     """
     created = requests.post(f"{BASE_URL}/todos", json=new_todo).json()
-    response = requests.delete(f"{BASE_URL}/todos/{created['id']}")
+    deleted_id = created["id"]
+
+    db_todo_before = db_session.query(TodoDB).filter_by(id=deleted_id).first()
+    assert db_todo_before is not None
+
+    response = requests.delete(f"{BASE_URL}/todos/{deleted_id}")
     assert response.status_code == 200
     assert response.json() == {}
+
+    db_session.expire_all()
+    db_todo = db_session.query(TodoDB).filter_by(id=deleted_id).first()
+    assert db_todo is None
+    count = db_session.query(TodoDB).filter_by(id=deleted_id).count()
+    assert count == 0
+
+    allure.attach(
+        '<table border="1" style="border-collapse: collapse; width: 100%;">'
+        '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
+        '<tr><td style="padding: 8px;">db_todo_before is not None</td><td style="padding: 8px;">Rækken eksisterede inden sletning</td></tr>'
+        '<tr><td style="padding: 8px;">deleted_id > 0</td><td style="padding: 8px;">ID var positivt</td></tr>'
+        '<tr><td style="padding: 8px;">db_todo is None</td><td style="padding: 8px;">Rækken er slettet fra databasen</td></tr>'
+        '<tr><td style="padding: 8px;">count == 0</td><td style="padding: 8px;">Query returnerer nul rækker</td></tr>'
+        "</table>",
+        name="Database assertions",
+        attachment_type=allure.attachment_type.HTML
+    )

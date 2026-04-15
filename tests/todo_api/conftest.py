@@ -1,7 +1,24 @@
 import pytest
 import requests
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 BASE_URL = "https://pythonayd-todo-api.onrender.com"
+
+
+@pytest.fixture(scope="function")
+def db_session():
+    database_url = os.getenv("DATABASE_URL")
+    engine = create_engine(database_url)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    yield session
+    session.close()
+    engine.dispose()
 
 
 @pytest.fixture

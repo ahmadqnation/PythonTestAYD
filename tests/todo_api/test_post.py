@@ -4,30 +4,31 @@ import requests
 from tests.todo_api.conftest import BASE_URL
 from api.models_db import TodoDB
 from tests.todo_api.diagrams import post_diagram, negative_post_diagram
+from tests.todo_api.testdesign_tables import post_equivalence_table, post_boundary_table
 
 
 @pytest.mark.smoke
 @pytest.mark.regression
 @allure.feature("Todo API")
 @allure.story("POST")
-@allure.title("Opret todo med alle gyldige felter")
+@allure.title("Opret todo med alle gyldige felter og valider response")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
-    "Beskrivelse: Opretter en todo med alle gyldige felter<br>"
-    "Forventet: HTTP 201 og response indeholder den sendte titel"
+    "Beskrivelse: Opretter en todo med alle gyldige felter og verificerer at response indeholder id, title og completed<br>"
+    "Forventet: HTTP 201 og response indeholder alle forventede felter"
 )
 def test_opret_todo(new_todo, db_session):
     """
     Testdesign: Ækvivalenspartitionering
-    Beskrivelse: Opretter en todo med alle gyldige felter
+    Beskrivelse: Opretter en todo med alle gyldige felter og verificerer response felter
     Forudsætning: API'et er tilgængeligt og accepterer POST requests
-    Forventet resultat: HTTP 201 og response indeholder den sendte titel
+    Forventet resultat: HTTP 201 og response indeholder id, title, completed
     """
     response = requests.post(f"{BASE_URL}/todos", json=new_todo)
     todo = response.json()
     print(f"\nResponse: {todo}")
     assert response.status_code == 201
     assert todo["title"] == new_todo["title"]
+    assert all(felt in todo for felt in ["id", "title", "completed"])
 
     db_todo = db_session.query(TodoDB).filter_by(id=todo["id"]).first()
     assert db_todo is not None
@@ -41,18 +42,22 @@ def test_opret_todo(new_todo, db_session):
     allure.attach(
         '<table border="1" style="border-collapse: collapse; width: 100%;">'
         '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
+        '<tr><td style="padding: 8px;">response.status_code == 201</td><td style="padding: 8px;">HTTP 201</td></tr>'
+        '<tr><td style="padding: 8px;">todo["title"] == new_todo["title"]</td><td style="padding: 8px;">Title matcher det vi sendte</td></tr>'
+        '<tr><td style="padding: 8px;">all(felt in todo for felt in [...])</td><td style="padding: 8px;">Response indeholder id, title, completed</td></tr>'
         '<tr><td style="padding: 8px;">db_todo is not None</td><td style="padding: 8px;">Rækken eksisterer i databasen</td></tr>'
         '<tr><td style="padding: 8px;">db_todo.id == todo["id"]</td><td style="padding: 8px;">ID matcher API response</td></tr>'
         '<tr><td style="padding: 8px;">db_todo.id > 0</td><td style="padding: 8px;">ID er positivt</td></tr>'
-        '<tr><td style="padding: 8px;">db_todo.title == "Test todo"</td><td style="padding: 8px;">Title matcher det vi sendte</td></tr>'
+        '<tr><td style="padding: 8px;">db_todo.title == new_todo["title"]</td><td style="padding: 8px;">Title matcher det vi sendte</td></tr>'
         '<tr><td style="padding: 8px;">db_todo.title != ""</td><td style="padding: 8px;">Title er ikke tom</td></tr>'
-        '<tr><td style="padding: 8px;">db_todo.completed == False</td><td style="padding: 8px;">Completed matcher det vi sendte (False)</td></tr>'
+        '<tr><td style="padding: 8px;">db_todo.completed == new_todo["completed"]</td><td style="padding: 8px;">Completed matcher det vi sendte</td></tr>'
         '<tr><td style="padding: 8px;">isinstance(completed, bool)</td><td style="padding: 8px;">Completed er en boolean</td></tr>'
         "</table>",
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(post_equivalence_table("K1"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(post_diagram(new_todo["title"], new_todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
     requests.delete(f"{BASE_URL}/todos/{todo['id']}")
@@ -63,7 +68,7 @@ def test_opret_todo(new_todo, db_session):
 @allure.feature("Todo API")
 @allure.story("POST")
 @allure.title("Opret todo uden titel")
-@allure.description("Testdesign: Negativ test\nBeskrivelse: Forsøger at oprette en todo uden det påkrævede titel-felt\nForventet: HTTP 422")
+@allure.description("Beskrivelse: Forsøger at oprette en todo uden det påkrævede titel-felt\nForventet: HTTP 422")
 def test_opret_todo_uden_titel(db_session):
     """
     Testdesign: Negativ test
@@ -92,6 +97,7 @@ def test_opret_todo_uden_titel(db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(post_equivalence_table("K4"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(negative_post_diagram("title"), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -100,7 +106,6 @@ def test_opret_todo_uden_titel(db_session):
 @allure.story("POST")
 @allure.title("Opret todo med completed false som default")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
     "Beskrivelse: Opretter en todo uden completed-feltet og verificerer default-værdien<br>"
     "Forventet: HTTP 201 og completed = false"
 )
@@ -141,6 +146,7 @@ def test_opret_todo_completed_false_som_default(db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(post_equivalence_table("K2"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(post_diagram(todo_input["title"], todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
     requests.delete(f"{BASE_URL}/todos/{todo['id']}")
@@ -151,7 +157,6 @@ def test_opret_todo_completed_false_som_default(db_session):
 @allure.story("POST")
 @allure.title("Opret todo med completed true")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
     "Beskrivelse: Opretter en todo med completed sat til true<br>"
     "Forventet: HTTP 201 og completed = true"
 )
@@ -192,57 +197,8 @@ def test_opret_todo_med_completed_true(db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(post_equivalence_table("K3"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(post_diagram(todo_input["title"], todo_input["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
-
-    requests.delete(f"{BASE_URL}/todos/{todo['id']}")
-
-
-@pytest.mark.regression
-@allure.feature("Todo API")
-@allure.story("POST")
-@allure.title("Valider felter i POST response")
-@allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
-    "Beskrivelse: Validerer at response indeholder alle forventede felter efter oprettelse<br>"
-    "Forventet: HTTP 201 og response indeholder id, title, completed"
-)
-def test_valider_felter_i_response(new_todo, db_session):
-    """
-    Testdesign: Ækvivalenspartitionering
-    Beskrivelse: Validerer at response indeholder alle forventede felter efter oprettelse
-    Forudsætning: API'et er tilgængeligt
-    Forventet resultat: HTTP 201 og response indeholder felterne id, title, completed
-    """
-    response = requests.post(f"{BASE_URL}/todos", json=new_todo)
-    todo = response.json()
-    assert response.status_code == 201
-    assert all(felt in todo for felt in ["id", "title", "completed"])
-
-    db_todo = db_session.query(TodoDB).filter_by(id=todo["id"]).first()
-    assert db_todo is not None
-    assert db_todo.id == todo["id"]
-    assert db_todo.id > 0
-    assert db_todo.title == new_todo["title"]
-    assert db_todo.title != ""
-    assert db_todo.completed == new_todo["completed"]
-    assert isinstance(db_todo.completed, bool)
-
-    allure.attach(
-        '<table border="1" style="border-collapse: collapse; width: 100%;">'
-        '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
-        '<tr><td style="padding: 8px;">db_todo is not None</td><td style="padding: 8px;">Rækken eksisterer i databasen</td></tr>'
-        '<tr><td style="padding: 8px;">db_todo.id == todo["id"]</td><td style="padding: 8px;">ID matcher API response</td></tr>'
-        '<tr><td style="padding: 8px;">db_todo.id > 0</td><td style="padding: 8px;">ID er positivt</td></tr>'
-        '<tr><td style="padding: 8px;">db_todo.title == "Test todo"</td><td style="padding: 8px;">Title matcher det vi sendte</td></tr>'
-        '<tr><td style="padding: 8px;">db_todo.title != ""</td><td style="padding: 8px;">Title er ikke tom</td></tr>'
-        '<tr><td style="padding: 8px;">db_todo.completed == False</td><td style="padding: 8px;">Completed matcher det vi sendte (False)</td></tr>'
-        '<tr><td style="padding: 8px;">isinstance(completed, bool)</td><td style="padding: 8px;">Completed er en boolean</td></tr>'
-        "</table>",
-        name="Database assertions",
-        attachment_type=allure.attachment_type.HTML
-    )
-
-    allure.attach(post_diagram(new_todo["title"], new_todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
     requests.delete(f"{BASE_URL}/todos/{todo['id']}")
 
@@ -252,7 +208,6 @@ def test_valider_felter_i_response(new_todo, db_session):
 @allure.story("POST")
 @allure.title("Opret todo med lang titel (500 tegn)")
 @allure.description(
-    "Testdesign: Grænseværdianalyse<br>"
     "Beskrivelse: Opretter en todo med en titel på 500 tegn (øvre grænse)<br>"
     "Forventet: HTTP 201 og titel i response er 500 tegn lang"
 )
@@ -293,6 +248,141 @@ def test_opret_todo_med_lang_titel(db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(post_boundary_table("BV3"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(post_diagram(lang_titel, todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
     requests.delete(f"{BASE_URL}/todos/{todo['id']}")
+
+
+@pytest.mark.regression
+@pytest.mark.negative
+@allure.feature("Todo API")
+@allure.story("POST")
+@allure.title("Opret todo med tom titel (0 tegn)")
+@allure.description(
+    "Beskrivelse: Forsøger at oprette en todo med en tom title (0 tegn, under nedre grænse)<br>"
+    "Forventet: HTTP 422"
+)
+def test_opret_todo_med_tom_titel(db_session):
+    """
+    Testdesign: Grænseværdianalyse
+    Beskrivelse: Forsøger at oprette en todo med en tom title (0 tegn, under nedre grænse)
+    Forudsætning: API'et validerer at title ikke er tom
+    Forventet resultat: HTTP 422
+    """
+    count_before = db_session.query(TodoDB).count()
+
+    response = requests.post(f"{BASE_URL}/todos", json={"title": ""})
+    print(f"\nResponse: {response.status_code}")
+    assert response.status_code == 422
+
+    db_session.expire_all()
+    count_after = db_session.query(TodoDB).count()
+    assert count_after == count_before
+
+    allure.attach(
+        '<table border="1" style="border-collapse: collapse; width: 100%;">'
+        '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
+        '<tr><td style="padding: 8px;">count_before (baseline)</td><td style="padding: 8px;">Registrerer antal rækker inden kaldet</td></tr>'
+        '<tr><td style="padding: 8px;">response.status_code == 422</td><td style="padding: 8px;">HTTP 422 (tom title afvises)</td></tr>'
+        '<tr><td style="padding: 8px;">count_after == count_before</td><td style="padding: 8px;">Ingen rækker oprettet i databasen</td></tr>'
+        "</table>",
+        name="Database assertions",
+        attachment_type=allure.attachment_type.HTML
+    )
+
+    allure.attach(post_boundary_table("BV1"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
+    allure.attach(negative_post_diagram('title=""'), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
+
+
+@pytest.mark.regression
+@allure.feature("Todo API")
+@allure.story("POST")
+@allure.title("Opret todo med enkelt tegn i titel (1 tegn)")
+@allure.description(
+    "Beskrivelse: Opretter en todo med en title på 1 tegn (nedre grænse)<br>"
+    "Forventet: HTTP 201 og title er 1 tegn lang"
+)
+def test_opret_todo_med_enkelt_tegn(db_session):
+    """
+    Testdesign: Grænseværdianalyse
+    Beskrivelse: Opretter en todo med en title på 1 tegn (nedre grænse)
+    Forudsætning: API'et accepterer title med minimum 1 tegn
+    Forventet resultat: HTTP 201 og title er 1 tegn lang
+    """
+    response = requests.post(f"{BASE_URL}/todos", json={"title": "a"})
+    todo = response.json()
+    assert response.status_code == 201
+    assert len(todo["title"]) == 1
+
+    db_todo = db_session.query(TodoDB).filter_by(id=todo["id"]).first()
+    assert db_todo is not None
+    assert db_todo.id == todo["id"]
+    assert db_todo.id > 0
+    assert db_todo.title == "a"
+    assert db_todo.title != ""
+    assert db_todo.completed == todo["completed"]
+    assert isinstance(db_todo.completed, bool)
+
+    allure.attach(
+        '<table border="1" style="border-collapse: collapse; width: 100%;">'
+        '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
+        '<tr><td style="padding: 8px;">response.status_code == 201</td><td style="padding: 8px;">HTTP 201</td></tr>'
+        '<tr><td style="padding: 8px;">len(todo["title"]) == 1</td><td style="padding: 8px;">Title er præcis 1 tegn lang</td></tr>'
+        '<tr><td style="padding: 8px;">db_todo is not None</td><td style="padding: 8px;">Rækken eksisterer i databasen</td></tr>'
+        '<tr><td style="padding: 8px;">db_todo.id == todo["id"]</td><td style="padding: 8px;">ID matcher API response</td></tr>'
+        '<tr><td style="padding: 8px;">db_todo.id > 0</td><td style="padding: 8px;">ID er positivt</td></tr>'
+        '<tr><td style="padding: 8px;">db_todo.title == "a"</td><td style="padding: 8px;">Title er korrekt gemt i databasen</td></tr>'
+        '<tr><td style="padding: 8px;">db_todo.title != ""</td><td style="padding: 8px;">Title er ikke tom</td></tr>'
+        '<tr><td style="padding: 8px;">db_todo.completed == False</td><td style="padding: 8px;">Completed er False (API default)</td></tr>'
+        '<tr><td style="padding: 8px;">isinstance(completed, bool)</td><td style="padding: 8px;">Completed er en boolean</td></tr>'
+        "</table>",
+        name="Database assertions",
+        attachment_type=allure.attachment_type.HTML
+    )
+
+    allure.attach(post_boundary_table("BV2"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
+    allure.attach(post_diagram("a", todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
+
+    requests.delete(f"{BASE_URL}/todos/{todo['id']}")
+
+
+@pytest.mark.regression
+@pytest.mark.negative
+@allure.feature("Todo API")
+@allure.story("POST")
+@allure.title("Opret todo over max længde (501 tegn)")
+@allure.description(
+    "Beskrivelse: Forsøger at oprette en todo med en title på 501 tegn (over øvre grænse)<br>"
+    "Forventet: HTTP 422"
+)
+def test_opret_todo_over_max_laengde(db_session):
+    """
+    Testdesign: Grænseværdianalyse
+    Beskrivelse: Forsøger at oprette en todo med en title på 501 tegn (over øvre grænse)
+    Forudsætning: API'et afviser titles over 500 tegn
+    Forventet resultat: HTTP 422
+    """
+    count_before = db_session.query(TodoDB).count()
+
+    response = requests.post(f"{BASE_URL}/todos", json={"title": "a" * 501})
+    print(f"\nResponse: {response.status_code}")
+    assert response.status_code == 422
+
+    db_session.expire_all()
+    count_after = db_session.query(TodoDB).count()
+    assert count_after == count_before
+
+    allure.attach(
+        '<table border="1" style="border-collapse: collapse; width: 100%;">'
+        '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
+        '<tr><td style="padding: 8px;">count_before (baseline)</td><td style="padding: 8px;">Registrerer antal rækker inden kaldet</td></tr>'
+        '<tr><td style="padding: 8px;">response.status_code == 422</td><td style="padding: 8px;">HTTP 422 (title over max længde afvises)</td></tr>'
+        '<tr><td style="padding: 8px;">count_after == count_before</td><td style="padding: 8px;">Ingen rækker oprettet i databasen</td></tr>'
+        "</table>",
+        name="Database assertions",
+        attachment_type=allure.attachment_type.HTML
+    )
+
+    allure.attach(post_boundary_table("BV4"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
+    allure.attach(negative_post_diagram("501 tegn"), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)

@@ -4,6 +4,7 @@ import requests
 from tests.todo_api.conftest import BASE_URL
 from api.models_db import TodoDB
 from tests.todo_api.diagrams import put_diagram, negative_put_diagram
+from tests.todo_api.testdesign_tables import put_equivalence_table
 
 
 @pytest.mark.smoke
@@ -12,7 +13,6 @@ from tests.todo_api.diagrams import put_diagram, negative_put_diagram
 @allure.story("PUT")
 @allure.title("Opdater todo titel")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
     "Beskrivelse: Opdaterer titlen på en eksisterende todo<br>"
     "Forventet: HTTP 200 og titel matcher den sendte værdi"
 )
@@ -53,6 +53,7 @@ def test_opdater_todo_titel(created_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(put_equivalence_table("K1"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(put_diagram("Opdateret titel", False), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -61,7 +62,6 @@ def test_opdater_todo_titel(created_todo, db_session):
 @allure.story("PUT")
 @allure.title("Opdater todo completed status")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
     "Beskrivelse: Opdaterer completed-feltet på en eksisterende todo<br>"
     "Forventet: HTTP 200 og completed = true"
 )
@@ -101,6 +101,7 @@ def test_opdater_todo_completed(created_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(put_equivalence_table("K2"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(put_diagram(created_todo["title"], True), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -109,7 +110,7 @@ def test_opdater_todo_completed(created_todo, db_session):
 @allure.feature("Todo API")
 @allure.story("PUT")
 @allure.title("Opdater todo der ikke findes")
-@allure.description("Testdesign: Negativ test\nBeskrivelse: Forsøger at opdatere en todo med et id der ikke eksisterer\nForventet: HTTP 404")
+@allure.description("Beskrivelse: Forsøger at opdatere en todo med et id der ikke eksisterer\nForventet: HTTP 404")
 def test_opdater_todo_der_ikke_findes(db_session):
     """
     Testdesign: Negativ test
@@ -134,6 +135,7 @@ def test_opdater_todo_der_ikke_findes(db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(put_equivalence_table("K4"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(negative_put_diagram(99999), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -142,7 +144,6 @@ def test_opdater_todo_der_ikke_findes(db_session):
 @allure.story("PUT")
 @allure.title("Opdater todo med tomt objekt")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
     "Beskrivelse: Opdaterer en todo med et tomt objekt<br>"
     "Forventet: HTTP 200 og todo er uændret"
 )
@@ -182,6 +183,7 @@ def test_opdater_todo_med_tomt_objekt(created_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(put_equivalence_table("K3"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(put_diagram(created_todo["title"], created_todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -190,7 +192,6 @@ def test_opdater_todo_med_tomt_objekt(created_todo, db_session):
 @allure.story("PUT")
 @allure.title("Valider felter i PUT response")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
     "Beskrivelse: Validerer at response indeholder alle forventede felter efter opdatering<br>"
     "Forventet: HTTP 200 og response indeholder id, title, completed"
 )
@@ -231,4 +232,5 @@ def test_valider_felter_i_response(created_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(put_equivalence_table("K1"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(put_diagram("Opdateret", False), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)

@@ -4,6 +4,7 @@ import requests
 from tests.todo_api.conftest import BASE_URL
 from api.models_db import TodoDB
 from tests.todo_api.diagrams import delete_diagram, negative_delete_diagram
+from tests.todo_api.testdesign_tables import delete_equivalence_table
 
 
 @pytest.mark.smoke
@@ -12,7 +13,6 @@ from tests.todo_api.diagrams import delete_diagram, negative_delete_diagram
 @allure.story("DELETE")
 @allure.title("Slet eksisterende todo")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
     "Beskrivelse: Sletter en eksisterende todo med gyldigt id<br>"
     "Forventet: HTTP 200"
 )
@@ -51,6 +51,7 @@ def test_slet_todo(new_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(delete_equivalence_table("K1"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(delete_diagram(deleted_id), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -59,7 +60,7 @@ def test_slet_todo(new_todo, db_session):
 @allure.feature("Todo API")
 @allure.story("DELETE")
 @allure.title("Slet todo der ikke findes")
-@allure.description("Testdesign: Negativ test\nBeskrivelse: Forsøger at slette en todo med et id der ikke eksisterer\nForventet: HTTP 404")
+@allure.description("Beskrivelse: Forsøger at slette en todo med et id der ikke eksisterer\nForventet: HTTP 404")
 def test_slet_todo_der_ikke_findes(db_session):
     """
     Testdesign: Negativ test
@@ -84,6 +85,7 @@ def test_slet_todo_der_ikke_findes(db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(delete_equivalence_table("K3"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(negative_delete_diagram(99999), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -92,7 +94,6 @@ def test_slet_todo_der_ikke_findes(db_session):
 @allure.story("DELETE")
 @allure.title("Valider tomt response ved DELETE")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
     "Beskrivelse: Validerer at response ved DELETE er et tomt objekt<br>"
     "Forventet: HTTP 200 og response body er {}"
 )
@@ -131,4 +132,5 @@ def test_valider_tomt_response(new_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(delete_equivalence_table("K2"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(delete_diagram(deleted_id), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)

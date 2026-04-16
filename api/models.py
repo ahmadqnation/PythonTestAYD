@@ -1,9 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
 class TodoBase(BaseModel):
-    title: str
+    title: str = Field(..., min_length=1, max_length=500)
     completed: bool = False
 
 

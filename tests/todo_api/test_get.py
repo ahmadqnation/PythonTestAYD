@@ -9,6 +9,7 @@ from tests.todo_api.diagrams import (
     get_validate_fields_diagram,
     negative_get_diagram,
 )
+from tests.todo_api.testdesign_tables import get_equivalence_table
 
 
 @pytest.mark.smoke
@@ -17,7 +18,6 @@ from tests.todo_api.diagrams import (
 @allure.story("GET")
 @allure.title("Hent alle todos")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
     "Beskrivelse: Henter alle todos fra /todos endpointet<br>"
     "Forventet: HTTP 200 og en liste med mindst én todo"
 )
@@ -52,6 +52,7 @@ def test_hent_alle_todos(created_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(get_equivalence_table("K1"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(get_all_diagram(), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -60,7 +61,6 @@ def test_hent_alle_todos(created_todo, db_session):
 @allure.story("GET")
 @allure.title("Hent enkelt todo med gyldigt id")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
     "Beskrivelse: Henter en enkelt todo med gyldigt id<br>"
     "Forventet: HTTP 200 og todo med korrekt id"
 )
@@ -103,6 +103,7 @@ def test_hent_enkelt_todo(created_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(get_equivalence_table("K2"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(get_single_diagram(todo_id), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -111,7 +112,7 @@ def test_hent_enkelt_todo(created_todo, db_session):
 @allure.feature("Todo API")
 @allure.story("GET")
 @allure.title("Hent todo der ikke findes")
-@allure.description("Testdesign: Negativ test\nBeskrivelse: Forsøger at hente en todo med et id der ikke eksisterer\nForventet: HTTP 404")
+@allure.description("Beskrivelse: Forsøger at hente en todo med et id der ikke eksisterer\nForventet: HTTP 404")
 def test_hent_todo_der_ikke_findes(db_session):
     """
     Testdesign: Negativ test
@@ -142,6 +143,7 @@ def test_hent_todo_der_ikke_findes(db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(get_equivalence_table("K4"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(negative_get_diagram(99999, 404), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -150,7 +152,6 @@ def test_hent_todo_der_ikke_findes(db_session):
 @allure.story("GET")
 @allure.title("Valider felter i todo response")
 @allure.description(
-    "Testdesign: Ækvivalenspartitionering<br>"
     "Beskrivelse: Validerer at en todo indeholder alle forventede felter<br>"
     "Forventet: HTTP 200 og response indeholder id, title, completed"
 )
@@ -198,6 +199,7 @@ def test_valider_felter_i_todo(created_todo, db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(get_equivalence_table("K3"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(get_validate_fields_diagram(todo_id), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -206,7 +208,7 @@ def test_valider_felter_i_todo(created_todo, db_session):
 @allure.feature("Todo API")
 @allure.story("GET")
 @allure.title("Hent todo med negativt id")
-@allure.description("Testdesign: Grænseværdianalyse\nBeskrivelse: Forsøger at hente en todo med negativt id (under nedre grænse)\nForventet: HTTP 404")
+@allure.description("Beskrivelse: Forsøger at hente en todo med negativt id (under nedre grænse)\nForventet: HTTP 404")
 def test_hent_todo_med_negativt_id(db_session):
     """
     Testdesign: Grænseværdianalyse
@@ -236,6 +238,7 @@ def test_hent_todo_med_negativt_id(db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(get_equivalence_table("K5"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(negative_get_diagram(-1, 404), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
 
 
@@ -244,7 +247,7 @@ def test_hent_todo_med_negativt_id(db_session):
 @allure.feature("Todo API")
 @allure.story("GET")
 @allure.title("Hent todo med ugyldigt id (tekst)")
-@allure.description("Testdesign: Ækvivalenspartitionering\nBeskrivelse: Forsøger at hente en todo med tekst som id (ugyldig partition)\nForventet: HTTP 422")
+@allure.description("Beskrivelse: Forsøger at hente en todo med tekst som id (ugyldig partition)\nForventet: HTTP 422")
 def test_hent_todo_med_ugyldigt_id(db_session):
     """
     Testdesign: Ækvivalenspartitionering
@@ -272,4 +275,5 @@ def test_hent_todo_med_ugyldigt_id(db_session):
         attachment_type=allure.attachment_type.HTML
     )
 
+    allure.attach(get_equivalence_table("K6"), name="Testdesign", attachment_type=allure.attachment_type.HTML)
     allure.attach(negative_get_diagram("abc", 422), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)

@@ -74,6 +74,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      - name: Checkout kode
+        uses: actions/checkout@v5
+
       - name: Download allure-results artifact
         uses: actions/download-artifact@v4
         with:
@@ -103,16 +106,21 @@ jobs:
             done
           fi
 
-      - name: Generer Allure rapport
-        run: allure generate allure-results --clean -o allure-report
+      - name: Generer Allure rapport til _site/
+        run: allure generate allure-results --clean -o _site
+
+      - name: Kopiér frontend til _site/app/
+        run: |
+          mkdir -p _site/app
+          cp frontend/index.html _site/app/index.html
 
       - name: Konfigurer GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload rapport til Pages artifact
+      - name: Upload rapport og frontend til Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: allure-report
+          path: _site
 
       - name: Deploy til GitHub Pages
         id: deployment

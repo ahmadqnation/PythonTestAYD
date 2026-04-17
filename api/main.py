@@ -1,9 +1,12 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+
 from api.database import engine, get_db
 from api.models import Todo, TodoCreate, TodoUpdate
 from api.models_db import TodoDB, Base
+from api.models_db_auth import UserDB  # registrerer User tabel med Base
+from api.routes_auth import get_current_user, router as auth_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -17,6 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
+
 
 @app.get("/health")
 def health_check():
@@ -24,12 +29,19 @@ def health_check():
 
 
 @app.get("/todos", response_model=list[Todo])
-def get_todos(db: Session = Depends(get_db)):
+def get_todos(
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user),
+):
     return db.query(TodoDB).all()
 
 
 @app.get("/todos/{todo_id}", response_model=Todo)
-def get_todo(todo_id: int, db: Session = Depends(get_db)):
+def get_todo(
+    todo_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user),
+):
     todo = db.query(TodoDB).filter(TodoDB.id == todo_id).first()
     if not todo:
         raise HTTPException(status_code=404, detail="Todo ikke fundet")
@@ -37,7 +49,11 @@ def get_todo(todo_id: int, db: Session = Depends(get_db)):
 
 
 @app.post("/todos", response_model=Todo, status_code=201)
-def create_todo(payload: TodoCreate, db: Session = Depends(get_db)):
+def create_todo(
+    payload: TodoCreate,
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user),
+):
     todo = TodoDB(**payload.model_dump())
     db.add(todo)
     db.commit()
@@ -46,7 +62,12 @@ def create_todo(payload: TodoCreate, db: Session = Depends(get_db)):
 
 
 @app.put("/todos/{todo_id}", response_model=Todo)
-def update_todo(todo_id: int, payload: TodoUpdate, db: Session = Depends(get_db)):
+def update_todo(
+    todo_id: int,
+    payload: TodoUpdate,
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user),
+):
     todo = db.query(TodoDB).filter(TodoDB.id == todo_id).first()
     if not todo:
         raise HTTPException(status_code=404, detail="Todo ikke fundet")
@@ -60,7 +81,11 @@ def update_todo(todo_id: int, payload: TodoUpdate, db: Session = Depends(get_db)
 
 
 @app.delete("/todos/{todo_id}", status_code=200)
-def delete_todo(todo_id: int, db: Session = Depends(get_db)):
+def delete_todo(
+    todo_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user),
+):
     todo = db.query(TodoDB).filter(TodoDB.id == todo_id).first()
     if not todo:
         raise HTTPException(status_code=404, detail="Todo ikke fundet")

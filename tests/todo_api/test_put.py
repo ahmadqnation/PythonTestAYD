@@ -32,7 +32,7 @@ def _link_reqs(*req_ids):
     "Beskrivelse: Opdaterer titlen på en eksisterende todo<br>"
     "Forventet: HTTP 200 og titel matcher den sendte værdi"
 )
-def test_opdater_todo_titel(created_todo, db_session):
+def test_opdater_todo_titel(created_todo, db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Opdaterer titlen på en eksisterende todo
@@ -40,7 +40,7 @@ def test_opdater_todo_titel(created_todo, db_session):
     Forventet resultat: HTTP 200 og titel matcher den sendte værdi
     """
     todo_id = created_todo["id"]
-    response = requests.put(f"{BASE_URL}/todos/{todo_id}", json={"title": "Opdateret titel"})
+    response = requests.put(f"{BASE_URL}/todos/{todo_id}", json={"title": "Opdateret titel"}, headers=auth_headers)
     print(f"\nResponse: {response.json()}")
     assert response.status_code == 200
     assert response.elapsed.total_seconds() < 2
@@ -85,7 +85,7 @@ def test_opdater_todo_titel(created_todo, db_session):
     "Beskrivelse: Opdaterer completed-feltet på en eksisterende todo<br>"
     "Forventet: HTTP 200 og completed = true"
 )
-def test_opdater_todo_completed(created_todo, db_session):
+def test_opdater_todo_completed(created_todo, db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Opdaterer completed-feltet på en eksisterende todo
@@ -93,7 +93,7 @@ def test_opdater_todo_completed(created_todo, db_session):
     Forventet resultat: HTTP 200 og completed = true
     """
     todo_id = created_todo["id"]
-    response = requests.put(f"{BASE_URL}/todos/{todo_id}", json={"completed": True})
+    response = requests.put(f"{BASE_URL}/todos/{todo_id}", json={"completed": True}, headers=auth_headers)
     assert response.status_code == 200
     assert response.elapsed.total_seconds() < 2
     assert "application/json" in response.headers["Content-Type"]
@@ -135,7 +135,7 @@ def test_opdater_todo_completed(created_todo, db_session):
 @allure.story("001C_PUT")
 @allure.title("Opdater todo der ikke findes")
 @allure.description("Beskrivelse: Forsøger at opdatere en todo med et id der ikke eksisterer\nForventet: HTTP 404")
-def test_opdater_todo_der_ikke_findes(db_session):
+def test_opdater_todo_der_ikke_findes(db_session, auth_headers):
     """
     Testdesign: Negativ test
     Beskrivelse: Forsøger at opdatere en todo med et id der ikke eksisterer
@@ -145,7 +145,7 @@ def test_opdater_todo_der_ikke_findes(db_session):
     db_todo = db_session.query(TodoDB).filter_by(id=99999).first()
     assert db_todo is None
 
-    response = requests.put(f"{BASE_URL}/todos/99999", json={"title": "Findes ikke"})
+    response = requests.put(f"{BASE_URL}/todos/99999", json={"title": "Findes ikke"}, headers=auth_headers)
     print(f"\nResponse status: {response.status_code}")
     assert response.status_code == 404
     assert response.elapsed.total_seconds() < 2
@@ -173,7 +173,7 @@ def test_opdater_todo_der_ikke_findes(db_session):
     "Beskrivelse: Opdaterer en todo med et tomt objekt<br>"
     "Forventet: HTTP 200 og todo er uændret"
 )
-def test_opdater_todo_med_tomt_objekt(created_todo, db_session):
+def test_opdater_todo_med_tomt_objekt(created_todo, db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Opdaterer en todo med et tomt objekt (ingen felter ændres)
@@ -181,7 +181,7 @@ def test_opdater_todo_med_tomt_objekt(created_todo, db_session):
     Forventet resultat: HTTP 200 og todo er uændret
     """
     todo_id = created_todo["id"]
-    response = requests.put(f"{BASE_URL}/todos/{todo_id}", json={})
+    response = requests.put(f"{BASE_URL}/todos/{todo_id}", json={}, headers=auth_headers)
     assert response.status_code == 200
     assert response.elapsed.total_seconds() < 2
     assert response.json()["title"] == created_todo["title"]
@@ -223,7 +223,7 @@ def test_opdater_todo_med_tomt_objekt(created_todo, db_session):
     "Beskrivelse: Validerer at response indeholder alle forventede felter efter opdatering<br>"
     "Forventet: HTTP 200 og response indeholder id, title, completed"
 )
-def test_valider_felter_i_response(created_todo, db_session):
+def test_valider_felter_i_response(created_todo, db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Validerer at response indeholder alle forventede felter efter opdatering
@@ -231,7 +231,7 @@ def test_valider_felter_i_response(created_todo, db_session):
     Forventet resultat: HTTP 200 og response indeholder felterne id, title, completed
     """
     todo_id = created_todo["id"]
-    response = requests.put(f"{BASE_URL}/todos/{todo_id}", json={"title": "Opdateret"})
+    response = requests.put(f"{BASE_URL}/todos/{todo_id}", json={"title": "Opdateret"}, headers=auth_headers)
     todo = response.json()
     assert response.status_code == 200
     assert response.elapsed.total_seconds() < 2

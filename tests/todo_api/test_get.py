@@ -37,7 +37,7 @@ def _link_reqs(*req_ids):
     "Beskrivelse: Henter alle todos fra /todos endpointet<br>"
     "Forventet: HTTP 200 og en liste med mindst én todo"
 )
-def test_hent_alle_todos(created_todo, db_session):
+def test_hent_alle_todos(created_todo, db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Henter alle todos fra /todos endpointet
@@ -47,7 +47,7 @@ def test_hent_alle_todos(created_todo, db_session):
     count_before = db_session.query(TodoDB).count()
     assert count_before > 0
 
-    response = requests.get(f"{BASE_URL}/todos")
+    response = requests.get(f"{BASE_URL}/todos", headers=auth_headers)
     print(f"\nResponse: {response.json()[:2]}")
     assert response.status_code == 200
     assert response.elapsed.total_seconds() < 2
@@ -84,7 +84,7 @@ def test_hent_alle_todos(created_todo, db_session):
     "Beskrivelse: Henter en enkelt todo med gyldigt id<br>"
     "Forventet: HTTP 200 og todo med korrekt id"
 )
-def test_hent_enkelt_todo(created_todo, db_session):
+def test_hent_enkelt_todo(created_todo, db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Henter en enkelt todo med gyldigt id
@@ -98,7 +98,7 @@ def test_hent_enkelt_todo(created_todo, db_session):
     assert db_todo.id == todo_id
     assert db_todo.id > 0
 
-    response = requests.get(f"{BASE_URL}/todos/{todo_id}")
+    response = requests.get(f"{BASE_URL}/todos/{todo_id}", headers=auth_headers)
     print(f"\nResponse: {response.json()}")
     assert response.status_code == 200
     assert response.elapsed.total_seconds() < 2
@@ -137,7 +137,7 @@ def test_hent_enkelt_todo(created_todo, db_session):
 @allure.story("001A_GET")
 @allure.title("Hent todo der ikke findes")
 @allure.description("Beskrivelse: Forsøger at hente en todo med et id der ikke eksisterer\nForventet: HTTP 404")
-def test_hent_todo_der_ikke_findes(db_session):
+def test_hent_todo_der_ikke_findes(db_session, auth_headers):
     """
     Testdesign: Negativ test
     Beskrivelse: Forsøger at hente en todo med et id der ikke eksisterer
@@ -148,7 +148,7 @@ def test_hent_todo_der_ikke_findes(db_session):
     assert db_todo is None
     count_before = db_session.query(TodoDB).count()
 
-    response = requests.get(f"{BASE_URL}/todos/99999")
+    response = requests.get(f"{BASE_URL}/todos/99999", headers=auth_headers)
     print(f"\nResponse: {response.status_code}")
     assert response.status_code == 404
     assert response.elapsed.total_seconds() < 2
@@ -181,7 +181,7 @@ def test_hent_todo_der_ikke_findes(db_session):
     "Beskrivelse: Validerer at en todo indeholder alle forventede felter<br>"
     "Forventet: HTTP 200 og response indeholder id, title, completed"
 )
-def test_valider_felter_i_todo(created_todo, db_session):
+def test_valider_felter_i_todo(created_todo, db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Validerer at en todo indeholder alle forventede felter
@@ -197,7 +197,7 @@ def test_valider_felter_i_todo(created_todo, db_session):
     assert db_todo.title != ""
     assert isinstance(db_todo.completed, bool)
 
-    response = requests.get(f"{BASE_URL}/todos/{todo_id}")
+    response = requests.get(f"{BASE_URL}/todos/{todo_id}", headers=auth_headers)
     todo = response.json()
     assert response.status_code == 200
     assert response.elapsed.total_seconds() < 2
@@ -239,7 +239,7 @@ def test_valider_felter_i_todo(created_todo, db_session):
 @allure.story("001A_GET")
 @allure.title("Hent todo med negativt id")
 @allure.description("Beskrivelse: Forsøger at hente en todo med negativt id (under nedre grænse)\nForventet: HTTP 404")
-def test_hent_todo_med_negativt_id(db_session):
+def test_hent_todo_med_negativt_id(db_session, auth_headers):
     """
     Testdesign: Grænseværdianalyse
     Beskrivelse: Forsøger at hente en todo med negativt id (under nedre grænse)
@@ -250,7 +250,7 @@ def test_hent_todo_med_negativt_id(db_session):
     assert db_todo is None
     count_before = db_session.query(TodoDB).count()
 
-    response = requests.get(f"{BASE_URL}/todos/-1")
+    response = requests.get(f"{BASE_URL}/todos/-1", headers=auth_headers)
     assert response.status_code == 404
     assert response.elapsed.total_seconds() < 2
 
@@ -280,7 +280,7 @@ def test_hent_todo_med_negativt_id(db_session):
 @allure.story("001A_GET")
 @allure.title("Hent todo med ugyldigt id (tekst)")
 @allure.description("Beskrivelse: Forsøger at hente en todo med tekst som id (ugyldig partition)\nForventet: HTTP 422")
-def test_hent_todo_med_ugyldigt_id(db_session):
+def test_hent_todo_med_ugyldigt_id(db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Forsøger at hente en todo med tekst som id (ugyldig partition)
@@ -289,7 +289,7 @@ def test_hent_todo_med_ugyldigt_id(db_session):
     """
     count_before = db_session.query(TodoDB).count()
 
-    response = requests.get(f"{BASE_URL}/todos/abc")
+    response = requests.get(f"{BASE_URL}/todos/abc", headers=auth_headers)
     assert response.status_code == 422
     assert response.elapsed.total_seconds() < 2
 

@@ -1,5 +1,8 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
 from api.database import engine, get_db
@@ -10,7 +13,33 @@ from api.routes_auth import get_current_user, router as auth_router
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Todo API")
+
+def _auto_migrate():
+    """
+    Tjekker om todos tabellen har user_id kolonnen.
+    Hvis ikke: drop og genskab tabellen med den opdaterede skema.
+    """
+    insp = inspect(engine)
+    if insp.has_table("todos"):
+        kolonner = [col["name"] for col in insp.get_columns("todos")]
+        if "user_id" not in kolonner:
+            print("Auto-migration: user_id kolonne mangler — dropper og genskaber todos tabel...")
+            TodoDB.__table__.drop(bind=engine, checkfirst=True)
+            TodoDB.__table__.create(bind=engine)
+            print("Auto-migration fuldfoert.")
+        else:
+            print("Auto-migration: todos tabel er opdateret, ingen migration nødvendig.")
+    else:
+        print("Auto-migration: todos tabel eksisterer ikke — oprettes via create_all.")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _auto_migrate()
+    yield
+
+
+app = FastAPI(title="Todo API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

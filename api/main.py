@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from api.database import engine, get_db
 from api.models import Todo, TodoCreate, TodoUpdate
@@ -7,6 +8,14 @@ from api.models_db import TodoDB, Base
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Todo API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")

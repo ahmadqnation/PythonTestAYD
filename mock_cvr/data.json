@@ -1,0 +1,38 @@
+{
+  "12345678": {
+    "firmanavn": "Acme A/S",
+    "adresse": "Hovedgaden 1",
+    "postnummer": "2100",
+    "by": "København Ø"
+  },
+  "87654321": {
+    "firmanavn": "TechNord ApS",
+    "adresse": "Nørreport 12",
+    "postnummer": "8000",
+    "by": "Aarhus C"
+  },
+  "11223344": {
+    "firmanavn": "GreenBuild A/S",
+    "adresse": "Industrivej 45",
+    "postnummer": "5000",
+    "by": "Odense C"
+  },
+  "55667788": {
+    "firmanavn": "DataFlow IVS",
+    "adresse": "Vesterbrogade 77",
+    "postnummer": "1620",
+    "by": "København V"
+  },
+  "99887766": {
+    "firmanavn": "Nordic Logistics A/S",
+    "adresse": "Havnegade 3",
+    "postnummer": "9000",
+    "by": "Aalborg"
+  },
+  "33445566": {
+    "firmanavn": "Syd Software ApS",
+    "adresse": "Søndergade 22",
+    "postnummer": "6000",
+    "by": "Kolding"
+  }
+}

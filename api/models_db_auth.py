@@ -1,0 +1,15 @@
+from sqlalchemy import Column, Integer, String
+from api.database import Base
+
+
+class UserDB(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    cvr = Column(String, nullable=False)
+    firmanavn = Column(String, nullable=False)
+    adresse = Column(String, nullable=False)
+    postnummer = Column(String, nullable=False)
+    by = Column(String, nullable=False)

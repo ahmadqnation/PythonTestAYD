@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Todo App</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --danger: #ef4444;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 10px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --transition: 0.2s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      font-size: 0.9rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 0.7rem 1rem;
+      font-size: 0.95rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color var(--transition);
+    }
+
+    input:focus { border-color: var(--primary); }
+    input::placeholder { color: var(--text-muted); }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--transition), opacity var(--transition);
+      margin-top: 0.5rem;
+    }
+
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .error-msg {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      border-radius: 7px;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      margin-bottom: 1rem;
+    }
+
+    .footer-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .footer-link a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>Todo App</h1>
+      <p>Log ind for at fortsætte</p>
+    </header>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <form id="login-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="din@email.dk" autocomplete="email" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Adgangskode</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn-primary" id="login-btn">Log ind</button>
+    </form>
+
+    <div class="footer-link">
+      Har du ikke en konto? <a href="register.html">Opret konto</a>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://pythonayd-todo-api.onrender.com';
+
+    const form     = document.getElementById('login-form');
+    const emailEl  = document.getElementById('email');
+    const passEl   = document.getElementById('password');
+    const loginBtn = document.getElementById('login-btn');
+    const errorEl  = document.getElementById('error-msg');
+
+    // Redirect hvis allerede logget ind
+    if (localStorage.getItem('token')) {
+      window.location.href = 'index.html';
+    }
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    }
+
+    function hideError() {
+      errorEl.style.display = 'none';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Logger ind...';
+
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: emailEl.value.trim(),
+            password: passEl.value,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.detail || 'Login mislykkedes. Tjek din email og adgangskode.');
+          return;
+        }
+
+        localStorage.setItem('token', data.access_token);
+        window.location.href = 'index.html';
+      } catch {
+        showError('Kunne ikke oprette forbindelse til API\'et. Prøv igen.');
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Log ind';
+      }
+    });
+  </script>
+</body>
+</html>

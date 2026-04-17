@@ -31,20 +31,20 @@ def _link_reqs(*req_ids):
     "Beskrivelse: Sletter en eksisterende todo med gyldigt id<br>"
     "Forventet: HTTP 200"
 )
-def test_slet_todo(new_todo, db_session):
+def test_slet_todo(new_todo, db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Sletter en eksisterende todo med gyldigt id
     Forudsætning: Todo eksisterer i API'et
     Forventet resultat: HTTP 200
     """
-    created = requests.post(f"{BASE_URL}/todos", json=new_todo).json()
+    created = requests.post(f"{BASE_URL}/todos", json=new_todo, headers=auth_headers).json()
     deleted_id = created["id"]
 
     db_todo_before = db_session.query(TodoDB).filter_by(id=deleted_id).first()
     assert db_todo_before is not None
 
-    response = requests.delete(f"{BASE_URL}/todos/{deleted_id}")
+    response = requests.delete(f"{BASE_URL}/todos/{deleted_id}", headers=auth_headers)
     print(f"\nResponse status: {response.status_code}")
     assert response.status_code == 200
     assert response.elapsed.total_seconds() < 2
@@ -80,7 +80,7 @@ def test_slet_todo(new_todo, db_session):
 @allure.story("001D_DELETE")
 @allure.title("Slet todo der ikke findes")
 @allure.description("Beskrivelse: Forsøger at slette en todo med et id der ikke eksisterer\nForventet: HTTP 404")
-def test_slet_todo_der_ikke_findes(db_session):
+def test_slet_todo_der_ikke_findes(db_session, auth_headers):
     """
     Testdesign: Negativ test
     Beskrivelse: Forsøger at slette en todo med et id der ikke eksisterer
@@ -90,7 +90,7 @@ def test_slet_todo_der_ikke_findes(db_session):
     db_todo = db_session.query(TodoDB).filter_by(id=99999).first()
     assert db_todo is None
 
-    response = requests.delete(f"{BASE_URL}/todos/99999")
+    response = requests.delete(f"{BASE_URL}/todos/99999", headers=auth_headers)
     print(f"\nResponse status: {response.status_code}")
     assert response.status_code == 404
     assert response.elapsed.total_seconds() < 2
@@ -118,20 +118,20 @@ def test_slet_todo_der_ikke_findes(db_session):
     "Beskrivelse: Validerer at response ved DELETE er et tomt objekt<br>"
     "Forventet: HTTP 200 og response body er {}"
 )
-def test_valider_tomt_response(new_todo, db_session):
+def test_valider_tomt_response(new_todo, db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Validerer at response ved DELETE er et tomt objekt
     Forudsætning: Todo eksisterer i API'et
     Forventet resultat: HTTP 200 og response body er {}
     """
-    created = requests.post(f"{BASE_URL}/todos", json=new_todo).json()
+    created = requests.post(f"{BASE_URL}/todos", json=new_todo, headers=auth_headers).json()
     deleted_id = created["id"]
 
     db_todo_before = db_session.query(TodoDB).filter_by(id=deleted_id).first()
     assert db_todo_before is not None
 
-    response = requests.delete(f"{BASE_URL}/todos/{deleted_id}")
+    response = requests.delete(f"{BASE_URL}/todos/{deleted_id}", headers=auth_headers)
     assert response.status_code == 200
     assert response.elapsed.total_seconds() < 2
     assert response.json() == {}

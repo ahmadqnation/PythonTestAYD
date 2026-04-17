@@ -37,26 +37,50 @@
     }
 
     header {
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 2rem;
+      gap: 1rem;
     }
 
-    header h1 {
+    .header-title { text-align: left; flex: 1; }
+
+    .header-title h1 {
       font-size: 2rem;
       font-weight: 700;
       color: var(--primary);
       letter-spacing: -0.5px;
     }
 
-    header p {
+    .header-title p {
       color: var(--text-muted);
       margin-top: 0.3rem;
       font-size: 0.9rem;
     }
 
+    .btn-logout {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color var(--transition), border-color var(--transition), background var(--transition);
+      flex-shrink: 0;
+    }
+
+    .btn-logout:hover {
+      color: var(--danger);
+      border-color: #fecaca;
+      background: #fef2f2;
+    }
+
     /* Error banner */
     #error-banner {
-      display: none;
       background: #fef2f2;
       border: 1px solid #fecaca;
       color: #b91c1c;
@@ -70,7 +94,6 @@
     }
 
     #error-banner.hidden { display: none; }
-
     #error-banner svg { flex-shrink: 0; }
 
     /* Add todo form */
@@ -95,13 +118,8 @@
       transition: border-color var(--transition);
     }
 
-    .add-form input:focus {
-      border-color: var(--primary);
-    }
-
+    .add-form input:focus { border-color: var(--primary); }
     .add-form input::placeholder { color: var(--text-muted); }
-
-    btn { display: inline-flex; align-items: center; gap: 0.4rem; }
 
     button {
       cursor: pointer;
@@ -130,9 +148,7 @@
       border: 1.5px solid #fecaca;
     }
 
-    .btn-danger:hover:not(:disabled) {
-      background: #fef2f2;
-    }
+    .btn-danger:hover:not(:disabled) { background: #fef2f2; }
 
     .btn-edit {
       background: transparent;
@@ -142,9 +158,7 @@
       border: 1.5px solid #c7d2fe;
     }
 
-    .btn-edit:hover:not(:disabled) {
-      background: #eef2ff;
-    }
+    .btn-edit:hover:not(:disabled) { background: #eef2ff; }
 
     /* Spinner */
     .spinner-wrap {
@@ -191,13 +205,8 @@
       flex-shrink: 0;
     }
 
-    .todo-title {
-      flex: 1;
-      font-size: 0.95rem;
-      word-break: break-word;
-    }
+    .todo-title { flex: 1; font-size: 0.95rem; word-break: break-word; }
 
-    /* Inline edit */
     .todo-edit-input {
       flex: 1;
       border: 1.5px solid var(--primary);
@@ -210,12 +219,7 @@
     .todo-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
 
     /* Empty state */
-    .empty {
-      text-align: center;
-      padding: 3rem 0;
-      color: var(--text-muted);
-    }
-
+    .empty { text-align: center; padding: 3rem 0; color: var(--text-muted); }
     .empty svg { margin-bottom: 0.8rem; opacity: 0.35; }
 
     /* Stats bar */
@@ -229,7 +233,7 @@
     }
 
     @media (max-width: 480px) {
-      header h1 { font-size: 1.6rem; }
+      .header-title h1 { font-size: 1.5rem; }
       .add-form { flex-direction: column; }
       .add-form button { width: 100%; justify-content: center; }
     }
@@ -238,8 +242,11 @@
 <body>
   <div class="container">
     <header>
-      <h1>Todo App</h1>
-      <p>Organisér din dag effektivt</p>
+      <div class="header-title">
+        <h1>Todo App</h1>
+        <p>Organisér din dag effektivt</p>
+      </div>
+      <button class="btn-logout" id="logout-btn">Log ud</button>
     </header>
 
     <div id="error-banner" class="hidden">
@@ -277,16 +284,29 @@
   <script>
     const API = 'https://pythonayd-todo-api.onrender.com';
 
-    const spinner      = document.getElementById('spinner');
-    const todoList     = document.getElementById('todo-list');
-    const addForm      = document.getElementById('add-form');
+    /* ── Auth guard ── */
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    const spinner       = document.getElementById('spinner');
+    const todoList      = document.getElementById('todo-list');
+    const addForm       = document.getElementById('add-form');
     const newTitleInput = document.getElementById('new-title');
-    const addBtn       = document.getElementById('add-btn');
-    const errorBanner  = document.getElementById('error-banner');
-    const errorMsg     = document.getElementById('error-msg');
-    const statsEl      = document.getElementById('stats');
-    const statsTotalEl = document.getElementById('stats-total');
-    const statsDoneEl  = document.getElementById('stats-done');
+    const addBtn        = document.getElementById('add-btn');
+    const errorBanner   = document.getElementById('error-banner');
+    const errorMsg      = document.getElementById('error-msg');
+    const statsEl       = document.getElementById('stats');
+    const statsTotalEl  = document.getElementById('stats-total');
+    const statsDoneEl   = document.getElementById('stats-done');
+    const logoutBtn     = document.getElementById('logout-btn');
+
+    /* ── Logout ── */
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location.href = 'login.html';
+    });
 
     /* ── Helpers ── */
     function showError(msg) {
@@ -315,14 +335,25 @@
       const res = await fetch(`${API}${path}`, {
         mode: 'cors',
         credentials: 'omit',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
         ...options,
       });
+
+      // Token udløbet eller ugyldigt
+      if (res.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = 'login.html';
+        return;
+      }
+
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.detail || `HTTP ${res.status}`);
       }
-      // 204 No Content has no body
+
       if (res.status === 204) return null;
       return res.json();
     }
@@ -374,7 +405,6 @@
           </div>`;
         return;
       }
-
       todoList.innerHTML = '';
       todos.forEach(todo => todoList.appendChild(createTodoEl(todo)));
     }
@@ -392,13 +422,9 @@
           <button class="btn-danger" title="Slet">Slet</button>
         </div>`;
 
-      const checkbox = item.querySelector('.todo-checkbox');
-      const editBtn  = item.querySelector('.btn-edit');
-      const deleteBtn = item.querySelector('.btn-danger');
-
-      checkbox.addEventListener('change', () => toggleTodo(todo, item, checkbox));
-      editBtn.addEventListener('click', () => startEdit(todo, item));
-      deleteBtn.addEventListener('click', () => removeTodo(todo.id, item));
+      item.querySelector('.todo-checkbox').addEventListener('change', () => toggleTodo(todo, item, item.querySelector('.todo-checkbox')));
+      item.querySelector('.btn-edit').addEventListener('click', () => startEdit(todo, item));
+      item.querySelector('.btn-danger').addEventListener('click', () => removeTodo(todo.id, item));
 
       return item;
     }
@@ -424,7 +450,6 @@
 
     function startEdit(todo, item) {
       const titleSpan = item.querySelector('.todo-title');
-      const editBtn   = item.querySelector('.btn-edit');
       const actions   = item.querySelector('.todo-actions');
 
       const input = document.createElement('input');
@@ -434,8 +459,7 @@
       const saveBtn   = document.createElement('button');
       saveBtn.className = 'btn-primary';
       saveBtn.textContent = 'Gem';
-      saveBtn.style.padding = '0.4rem 0.7rem';
-      saveBtn.style.fontSize = '0.82rem';
+      saveBtn.style.cssText = 'padding:0.4rem 0.7rem;font-size:0.82rem';
 
       const cancelBtn = document.createElement('button');
       cancelBtn.className = 'btn-edit';
@@ -526,10 +550,8 @@
     /* ── Utils ── */
     function escapeHtml(str) {
       return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
 

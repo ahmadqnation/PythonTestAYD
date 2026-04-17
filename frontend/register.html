@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Opret konto — Todo App</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --success: #22c55e;
+      --success-bg: #f0fdf4;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 10px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --transition: 0.2s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      font-size: 0.9rem;
+    }
+
+    .form-group { margin-bottom: 1.2rem; }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 0.7rem 1rem;
+      font-size: 0.95rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color var(--transition);
+    }
+
+    input:focus { border-color: var(--primary); }
+    input::placeholder { color: var(--text-muted); }
+    input:disabled { background: #f8fafc; color: var(--text-muted); }
+
+    .cvr-row {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .cvr-row input { flex: 1; }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary);
+      border: 1.5px solid #c7d2fe;
+      border-radius: 7px;
+      padding: 0.7rem 1rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background var(--transition), opacity var(--transition);
+    }
+
+    .btn-secondary:hover:not(:disabled) { background: #eef2ff; }
+    .btn-secondary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .cvr-info {
+      display: none;
+      background: var(--success-bg);
+      border: 1px solid #bbf7d0;
+      border-radius: 7px;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      color: #15803d;
+      margin-top: 0.5rem;
+    }
+
+    .cvr-info strong { display: block; font-weight: 700; }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--transition), opacity var(--transition);
+      margin-top: 0.5rem;
+    }
+
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .error-msg {
+      display: none;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      border-radius: 7px;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      margin-bottom: 1rem;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1.5rem 0;
+    }
+
+    .footer-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .footer-link a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <header>
+      <h1>Todo App</h1>
+      <p>Opret en ny konto</p>
+    </header>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <form id="register-form">
+      <!-- CVR opslag -->
+      <div class="form-group">
+        <label for="cvr">CVR-nummer</label>
+        <div class="cvr-row">
+          <input type="text" id="cvr" placeholder="8 cifre" maxlength="8" pattern="\d{8}" required />
+          <button type="button" class="btn-secondary" id="cvr-btn">Slå CVR op</button>
+        </div>
+        <div class="cvr-info" id="cvr-info"></div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Konto oplysninger -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="din@email.dk" autocomplete="email" required />
+      </div>
+      <div class="form-group">
+        <label for="password">Adgangskode</label>
+        <input type="password" id="password" placeholder="Mindst 8 tegn" autocomplete="new-password" minlength="8" required />
+      </div>
+
+      <button type="submit" class="btn-primary" id="register-btn">Opret konto</button>
+    </form>
+
+    <div class="footer-link">
+      Har du allerede en konto? <a href="login.html">Log ind</a>
+    </div>
+  </div>
+
+  <script>
+    const TODO_API   = 'https://pythonayd-todo-api.onrender.com';
+    const CVR_API    = 'https://pythonayd-mock-cvr.onrender.com';
+
+    const form        = document.getElementById('register-form');
+    const cvrInput    = document.getElementById('cvr');
+    const cvrBtn      = document.getElementById('cvr-btn');
+    const cvrInfo     = document.getElementById('cvr-info');
+    const emailEl     = document.getElementById('email');
+    const passEl      = document.getElementById('password');
+    const registerBtn = document.getElementById('register-btn');
+    const errorEl     = document.getElementById('error-msg');
+
+    // Redirect hvis allerede logget ind
+    if (localStorage.getItem('token')) {
+      window.location.href = 'index.html';
+    }
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    }
+
+    function hideError() {
+      errorEl.style.display = 'none';
+    }
+
+    /* ── CVR opslag ── */
+    cvrBtn.addEventListener('click', async () => {
+      const cvr = cvrInput.value.trim();
+      if (cvr.length !== 8 || !/^\d{8}$/.test(cvr)) {
+        showError('CVR-nummer skal være præcis 8 cifre.');
+        return;
+      }
+      hideError();
+      cvrBtn.disabled = true;
+      cvrBtn.textContent = 'Henter...';
+      cvrInfo.style.display = 'none';
+
+      try {
+        const res = await fetch(`${CVR_API}/cvr/${cvr}`, {
+          mode: 'cors',
+          credentials: 'omit',
+        });
+
+        if (res.status === 404) {
+          showError(`CVR-nummer ${cvr} blev ikke fundet.`);
+          return;
+        }
+
+        if (!res.ok) {
+          showError('CVR-opslag mislykkedes. Prøv igen.');
+          return;
+        }
+
+        const data = await res.json();
+        cvrInfo.innerHTML = `
+          <strong>${escapeHtml(data.firmanavn)}</strong>
+          ${escapeHtml(data.adresse)}, ${escapeHtml(data.postnummer)} ${escapeHtml(data.by)}`;
+        cvrInfo.style.display = 'block';
+      } catch {
+        showError('Kunne ikke oprette forbindelse til CVR API\'et.');
+      } finally {
+        cvrBtn.disabled = false;
+        cvrBtn.textContent = 'Slå CVR op';
+      }
+    });
+
+    // Tillad Enter i CVR felt
+    cvrInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); cvrBtn.click(); }
+    });
+
+    /* ── Registrering ── */
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+
+      const cvr = cvrInput.value.trim();
+      if (cvr.length !== 8 || !/^\d{8}$/.test(cvr)) {
+        showError('Indtast et gyldigt 8-cifret CVR-nummer og slå det op først.');
+        return;
+      }
+      if (cvrInfo.style.display === 'none') {
+        showError('Slå CVR-nummeret op inden du registrerer.');
+        return;
+      }
+
+      registerBtn.disabled = true;
+      registerBtn.textContent = 'Opretter konto...';
+
+      try {
+        const res = await fetch(`${TODO_API}/auth/register`, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: emailEl.value.trim(),
+            password: passEl.value,
+            cvr,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.detail || 'Registrering mislykkedes. Prøv igen.');
+          return;
+        }
+
+        // Auto-login efter registrering
+        const loginRes = await fetch(`${TODO_API}/auth/login`, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: emailEl.value.trim(),
+            password: passEl.value,
+          }),
+        });
+
+        const loginData = await loginRes.json();
+        if (loginRes.ok) {
+          localStorage.setItem('token', loginData.access_token);
+          window.location.href = 'index.html';
+        } else {
+          window.location.href = 'login.html';
+        }
+      } catch {
+        showError('Kunne ikke oprette forbindelse til API\'et. Prøv igen.');
+      } finally {
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'Opret konto';
+      }
+    });
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

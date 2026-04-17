@@ -35,14 +35,14 @@ def _link_reqs(*req_ids):
     "Beskrivelse: Opretter en todo med alle gyldige felter og verificerer at response indeholder id, title og completed<br>"
     "Forventet: HTTP 201 og response indeholder alle forventede felter"
 )
-def test_opret_todo(new_todo, db_session):
+def test_opret_todo(new_todo, db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Opretter en todo med alle gyldige felter og verificerer response felter
     Forudsætning: API'et er tilgængeligt og accepterer POST requests
     Forventet resultat: HTTP 201 og response indeholder id, title, completed
     """
-    response = requests.post(f"{BASE_URL}/todos", json=new_todo)
+    response = requests.post(f"{BASE_URL}/todos", json=new_todo, headers=auth_headers)
     todo = response.json()
     print(f"\nResponse: {todo}")
     assert response.status_code == 201
@@ -84,7 +84,7 @@ def test_opret_todo(new_todo, db_session):
     allure.attach(post_diagram(new_todo["title"], new_todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
     _link_reqs("REQ-003", "REQ-004", "REQ-006", "REQ-012", "REQ-013", "REQ-014", "REQ-015")
 
-    requests.delete(f"{BASE_URL}/todos/{todo['id']}")
+    requests.delete(f"{BASE_URL}/todos/{todo['id']}", headers=auth_headers)
 
 
 @pytest.mark.regression
@@ -93,7 +93,7 @@ def test_opret_todo(new_todo, db_session):
 @allure.story("001B_POST")
 @allure.title("Opret todo uden titel")
 @allure.description("Beskrivelse: Forsøger at oprette en todo uden det påkrævede titel-felt\nForventet: HTTP 422")
-def test_opret_todo_uden_titel(db_session):
+def test_opret_todo_uden_titel(db_session, auth_headers):
     """
     Testdesign: Negativ test
     Beskrivelse: Forsøger at oprette en todo uden det påkrævede titel-felt
@@ -102,7 +102,7 @@ def test_opret_todo_uden_titel(db_session):
     """
     count_before = db_session.query(TodoDB).count()
 
-    response = requests.post(f"{BASE_URL}/todos", json={"completed": False})
+    response = requests.post(f"{BASE_URL}/todos", json={"completed": False}, headers=auth_headers)
     print(f"\nResponse: {response.status_code}")
     assert response.status_code == 422
     assert response.elapsed.total_seconds() < 2
@@ -136,7 +136,7 @@ def test_opret_todo_uden_titel(db_session):
     "Beskrivelse: Opretter en todo uden completed-feltet og verificerer default-værdien<br>"
     "Forventet: HTTP 201 og completed = false"
 )
-def test_opret_todo_completed_false_som_default(db_session):
+def test_opret_todo_completed_false_som_default(db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Opretter en todo uden completed-feltet og verificerer default-værdien
@@ -144,7 +144,7 @@ def test_opret_todo_completed_false_som_default(db_session):
     Forventet resultat: HTTP 201 og completed = false
     """
     todo_input = {"title": "Default completed test"}
-    response = requests.post(f"{BASE_URL}/todos", json=todo_input)
+    response = requests.post(f"{BASE_URL}/todos", json=todo_input, headers=auth_headers)
     todo = response.json()
     assert response.status_code == 201
     assert response.elapsed.total_seconds() < 2
@@ -180,7 +180,7 @@ def test_opret_todo_completed_false_som_default(db_session):
     allure.attach(post_diagram(todo_input["title"], todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
     _link_reqs("REQ-003", "REQ-004", "REQ-006", "REQ-012", "REQ-013", "REQ-015")
 
-    requests.delete(f"{BASE_URL}/todos/{todo['id']}")
+    requests.delete(f"{BASE_URL}/todos/{todo['id']}", headers=auth_headers)
 
 
 @pytest.mark.regression
@@ -191,7 +191,7 @@ def test_opret_todo_completed_false_som_default(db_session):
     "Beskrivelse: Opretter en todo med completed sat til true<br>"
     "Forventet: HTTP 201 og completed = true"
 )
-def test_opret_todo_med_completed_true(db_session):
+def test_opret_todo_med_completed_true(db_session, auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Opretter en todo med completed sat til true
@@ -199,7 +199,7 @@ def test_opret_todo_med_completed_true(db_session):
     Forventet resultat: HTTP 201 og completed = true
     """
     todo_input = {"title": "Færdig todo", "completed": True}
-    response = requests.post(f"{BASE_URL}/todos", json=todo_input)
+    response = requests.post(f"{BASE_URL}/todos", json=todo_input, headers=auth_headers)
     todo = response.json()
     assert response.status_code == 201
     assert response.elapsed.total_seconds() < 2
@@ -235,7 +235,7 @@ def test_opret_todo_med_completed_true(db_session):
     allure.attach(post_diagram(todo_input["title"], todo_input["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
     _link_reqs("REQ-003", "REQ-004", "REQ-006", "REQ-012", "REQ-013", "REQ-015")
 
-    requests.delete(f"{BASE_URL}/todos/{todo['id']}")
+    requests.delete(f"{BASE_URL}/todos/{todo['id']}", headers=auth_headers)
 
 
 @pytest.mark.regression
@@ -246,7 +246,7 @@ def test_opret_todo_med_completed_true(db_session):
     "Beskrivelse: Opretter en todo med en titel på 500 tegn (øvre grænse)<br>"
     "Forventet: HTTP 201 og titel i response er 500 tegn lang"
 )
-def test_opret_todo_med_lang_titel(db_session):
+def test_opret_todo_med_lang_titel(db_session, auth_headers):
     """
     Testdesign: Grænseværdianalyse
     Beskrivelse: Opretter en todo med en titel på 500 tegn (øvre grænse)
@@ -254,7 +254,7 @@ def test_opret_todo_med_lang_titel(db_session):
     Forventet resultat: HTTP 201 og titel i response er 500 tegn lang
     """
     lang_titel = "a" * 500
-    response = requests.post(f"{BASE_URL}/todos", json={"title": lang_titel})
+    response = requests.post(f"{BASE_URL}/todos", json={"title": lang_titel}, headers=auth_headers)
     todo = response.json()
     assert response.status_code == 201
     assert response.elapsed.total_seconds() < 2
@@ -290,7 +290,7 @@ def test_opret_todo_med_lang_titel(db_session):
     allure.attach(post_diagram(lang_titel, todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
     _link_reqs("REQ-002", "REQ-004", "REQ-006", "REQ-012", "REQ-013", "REQ-015")
 
-    requests.delete(f"{BASE_URL}/todos/{todo['id']}")
+    requests.delete(f"{BASE_URL}/todos/{todo['id']}", headers=auth_headers)
 
 
 @pytest.mark.regression
@@ -302,7 +302,7 @@ def test_opret_todo_med_lang_titel(db_session):
     "Beskrivelse: Forsøger at oprette en todo med en tom title (0 tegn, under nedre grænse)<br>"
     "Forventet: HTTP 422"
 )
-def test_opret_todo_med_tom_titel(db_session):
+def test_opret_todo_med_tom_titel(db_session, auth_headers):
     """
     Testdesign: Grænseværdianalyse
     Beskrivelse: Forsøger at oprette en todo med en tom title (0 tegn, under nedre grænse)
@@ -311,7 +311,7 @@ def test_opret_todo_med_tom_titel(db_session):
     """
     count_before = db_session.query(TodoDB).count()
 
-    response = requests.post(f"{BASE_URL}/todos", json={"title": ""})
+    response = requests.post(f"{BASE_URL}/todos", json={"title": ""}, headers=auth_headers)
     print(f"\nResponse: {response.status_code}")
     assert response.status_code == 422
     assert response.elapsed.total_seconds() < 2
@@ -345,14 +345,14 @@ def test_opret_todo_med_tom_titel(db_session):
     "Beskrivelse: Opretter en todo med en title på 1 tegn (nedre grænse)<br>"
     "Forventet: HTTP 201 og title er 1 tegn lang"
 )
-def test_opret_todo_med_enkelt_tegn(db_session):
+def test_opret_todo_med_enkelt_tegn(db_session, auth_headers):
     """
     Testdesign: Grænseværdianalyse
     Beskrivelse: Opretter en todo med en title på 1 tegn (nedre grænse)
     Forudsætning: API'et accepterer title med minimum 1 tegn
     Forventet resultat: HTTP 201 og title er 1 tegn lang
     """
-    response = requests.post(f"{BASE_URL}/todos", json={"title": "a"})
+    response = requests.post(f"{BASE_URL}/todos", json={"title": "a"}, headers=auth_headers)
     todo = response.json()
     assert response.status_code == 201
     assert response.elapsed.total_seconds() < 2
@@ -389,7 +389,7 @@ def test_opret_todo_med_enkelt_tegn(db_session):
     allure.attach(post_diagram("a", todo["completed"]), name="Flow Diagram", attachment_type=allure.attachment_type.HTML)
     _link_reqs("REQ-001", "REQ-004", "REQ-006", "REQ-012", "REQ-013", "REQ-015")
 
-    requests.delete(f"{BASE_URL}/todos/{todo['id']}")
+    requests.delete(f"{BASE_URL}/todos/{todo['id']}", headers=auth_headers)
 
 
 @pytest.mark.regression
@@ -401,7 +401,7 @@ def test_opret_todo_med_enkelt_tegn(db_session):
     "Beskrivelse: Forsøger at oprette en todo med en title på 501 tegn (over øvre grænse)<br>"
     "Forventet: HTTP 422"
 )
-def test_opret_todo_over_max_laengde(db_session):
+def test_opret_todo_over_max_laengde(db_session, auth_headers):
     """
     Testdesign: Grænseværdianalyse
     Beskrivelse: Forsøger at oprette en todo med en title på 501 tegn (over øvre grænse)
@@ -410,7 +410,7 @@ def test_opret_todo_over_max_laengde(db_session):
     """
     count_before = db_session.query(TodoDB).count()
 
-    response = requests.post(f"{BASE_URL}/todos", json={"title": "a" * 501})
+    response = requests.post(f"{BASE_URL}/todos", json={"title": "a" * 501}, headers=auth_headers)
     print(f"\nResponse: {response.status_code}")
     assert response.status_code == 422
     assert response.elapsed.total_seconds() < 2

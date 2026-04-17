@@ -33,7 +33,7 @@ def get_todos(
     db: Session = Depends(get_db),
     current_user: UserDB = Depends(get_current_user),
 ):
-    return db.query(TodoDB).all()
+    return db.query(TodoDB).filter(TodoDB.user_id == current_user.id).all()
 
 
 @app.get("/todos/{todo_id}", response_model=Todo)
@@ -45,6 +45,8 @@ def get_todo(
     todo = db.query(TodoDB).filter(TodoDB.id == todo_id).first()
     if not todo:
         raise HTTPException(status_code=404, detail="Todo ikke fundet")
+    if todo.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Ingen adgang til denne todo")
     return todo
 
 
@@ -54,7 +56,7 @@ def create_todo(
     db: Session = Depends(get_db),
     current_user: UserDB = Depends(get_current_user),
 ):
-    todo = TodoDB(**payload.model_dump())
+    todo = TodoDB(**payload.model_dump(), user_id=current_user.id)
     db.add(todo)
     db.commit()
     db.refresh(todo)
@@ -71,6 +73,8 @@ def update_todo(
     todo = db.query(TodoDB).filter(TodoDB.id == todo_id).first()
     if not todo:
         raise HTTPException(status_code=404, detail="Todo ikke fundet")
+    if todo.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Ingen adgang til denne todo")
     if payload.title is not None:
         todo.title = payload.title
     if payload.completed is not None:
@@ -89,6 +93,8 @@ def delete_todo(
     todo = db.query(TodoDB).filter(TodoDB.id == todo_id).first()
     if not todo:
         raise HTTPException(status_code=404, detail="Todo ikke fundet")
+    if todo.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Ingen adgang til denne todo")
     db.delete(todo)
     db.commit()
     return {}

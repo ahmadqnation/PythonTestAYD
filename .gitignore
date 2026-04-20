@@ -6,3 +6,6 @@ __pycache__/
 *.iml
 reports/
 *.db
+node_modules/
+cypress/screenshots/
+cypress/videos/

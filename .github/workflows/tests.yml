@@ -112,7 +112,7 @@ jobs:
       - name: Kopiér frontend til _site/app/
         run: |
           mkdir -p _site/app
-          cp frontend/index.html _site/app/index.html
+          cp -r frontend/. _site/app/
 
       - name: Konfigurer GitHub Pages
         uses: actions/configure-pages@v5

@@ -185,8 +185,8 @@
       <div class="form-group">
         <label for="cvr">CVR-nummer</label>
         <div class="cvr-row">
-          <input type="text" id="cvr" placeholder="8 cifre" maxlength="8" pattern="\d{8}" required />
-          <button type="button" class="btn-secondary" id="cvr-btn">Slå CVR op</button>
+          <input type="text" id="cvr" name="cvr" data-cy="cvr-input" placeholder="8 cifre" maxlength="8" pattern="\d{8}" required />
+          <button type="button" class="btn-secondary" id="cvr-btn" data-cy="cvr-lookup">Slå CVR op</button>
         </div>
         <div class="cvr-info" id="cvr-info"></div>
       </div>
@@ -196,14 +196,14 @@
       <!-- Konto oplysninger -->
       <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" id="email" placeholder="din@email.dk" autocomplete="email" required />
+        <input type="email" id="email" data-cy="email-input" placeholder="din@email.dk" autocomplete="email" required />
       </div>
       <div class="form-group">
         <label for="password">Adgangskode</label>
-        <input type="password" id="password" placeholder="Mindst 8 tegn" autocomplete="new-password" minlength="8" required />
+        <input type="password" id="password" data-cy="password-input" placeholder="Mindst 8 tegn" autocomplete="new-password" minlength="8" required />
       </div>
 
-      <button type="submit" class="btn-primary" id="register-btn">Opret konto</button>
+      <button type="submit" class="btn-primary" id="register-btn" data-cy="register-submit">Opret konto</button>
     </form>
 
     <div class="footer-link">

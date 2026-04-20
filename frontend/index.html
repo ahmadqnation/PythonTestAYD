@@ -246,7 +246,7 @@
         <h1>Todo App</h1>
         <p>Organisér din dag effektivt</p>
       </div>
-      <button class="btn-logout" id="logout-btn">Log ud</button>
+      <button class="btn-logout" id="logout-btn" data-cy="logout-btn">Log ud</button>
     </header>
 
     <div id="error-banner" class="hidden">
@@ -260,12 +260,13 @@
       <input
         type="text"
         id="new-title"
+        data-cy="todo-input"
         placeholder="Hvad skal du lave?"
         maxlength="500"
         autocomplete="off"
         required
       />
-      <button type="submit" class="btn-primary" id="add-btn">Tilføj</button>
+      <button type="submit" class="btn-primary" id="add-btn" data-cy="todo-submit">Tilføj</button>
     </form>
 
     <div class="stats" id="stats" style="display:none">
@@ -413,13 +414,14 @@
       const item = document.createElement('div');
       item.className = `todo-item${todo.completed ? ' completed' : ''}`;
       item.dataset.id = todo.id;
+      item.dataset.cy = 'todo-item';
 
       item.innerHTML = `
         <input class="todo-checkbox" type="checkbox" title="Marker som ${todo.completed ? 'ikke ' : ''}afsluttet" ${todo.completed ? 'checked' : ''} />
         <span class="todo-title">${escapeHtml(todo.title)}</span>
         <div class="todo-actions">
-          <button class="btn-edit" title="Rediger">Rediger</button>
-          <button class="btn-danger" title="Slet">Slet</button>
+          <button class="btn-edit" data-cy="todo-edit" title="Rediger">Rediger</button>
+          <button class="btn-danger" data-cy="todo-delete" title="Slet">Slet</button>
         </div>`;
 
       item.querySelector('.todo-checkbox').addEventListener('change', () => toggleTodo(todo, item, item.querySelector('.todo-checkbox')));
@@ -454,10 +456,12 @@
 
       const input = document.createElement('input');
       input.className = 'todo-edit-input';
+      input.dataset.cy = 'todo-edit-input';
       input.value = todo.title;
 
       const saveBtn   = document.createElement('button');
       saveBtn.className = 'btn-primary';
+      saveBtn.dataset.cy = 'todo-save';
       saveBtn.textContent = 'Gem';
       saveBtn.style.cssText = 'padding:0.4rem 0.7rem;font-size:0.82rem';
 

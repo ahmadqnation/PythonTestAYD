@@ -1,0 +1,40 @@
+name: Cypress E2E Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Browser at teste i'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - chrome
+          - edge
+          - firefox
+          - electron
+
+jobs:
+  cypress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Installer dependencies
+        run: npm ci
+      - name: Kør Cypress tests
+        run: |
+          if [ "${{ github.event.inputs.browser }}" = "all" ]; then
+            node cypress/runners/run-all-browsers.js
+          else
+            npx cypress run --browser ${{ github.event.inputs.browser }} --env allure=true
+          fi
+      - name: Upload Allure resultater
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-cypress
+          path: allure-results-cypress/

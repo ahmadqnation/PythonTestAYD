@@ -6,6 +6,8 @@ from api.models_db import TodoDB
 from tests.todo_api.diagrams import put_diagram, negative_put_diagram
 from tests.todo_api.testdesign_tables import put_equivalence_table
 
+pytestmark = allure.parent_suite("001_API Tests (pytest)")
+
 _REQS = {
     "REQ-003": "Completed skal være boolean (true/false)",
     "REQ-004": "ID genereres automatisk og er unikt og positivt",

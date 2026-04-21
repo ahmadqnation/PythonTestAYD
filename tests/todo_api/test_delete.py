@@ -6,6 +6,8 @@ from api.models_db import TodoDB
 from tests.todo_api.diagrams import delete_diagram, negative_delete_diagram
 from tests.todo_api.testdesign_tables import delete_equivalence_table
 
+pytestmark = allure.parent_suite("001_API Tests (pytest)")
+
 _REQS = {
     "REQ-004": "ID genereres automatisk og er unikt og positivt",
     "REQ-008": "DELETE /todos/{id} returnerer HTTP 200 og sletter todo",

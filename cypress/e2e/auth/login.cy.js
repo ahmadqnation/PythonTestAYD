@@ -1,7 +1,9 @@
 import LoginPage from '../../pages/LoginPage'
+import { story } from 'allure-cypress'
 
-describe('Autentificering — Login', () => {
+describe('002_E2E Tests (Cypress)', () => {
   beforeEach(() => {
+    story('AUTH')
     cy.clearLocalStorage()
   })
 
@@ -41,10 +43,16 @@ describe('Autentificering — Login', () => {
   })
 
   it('TC-AUTH-004: Login med forkerte credentials → Fejlbesked vises', () => {
+    cy.intercept('POST', '**/auth/login', {
+      statusCode: 401,
+      body: { detail: 'Forkert email eller adgangskode' },
+    }).as('loginFailed')
+
     LoginPage.visit()
     LoginPage.enterEmail('forkert@email.dk')
     LoginPage.enterPassword('ForkertPassword123!')
     LoginPage.submit()
-    cy.get('#error-msg', { timeout: 15000 }).should('be.visible')
+    cy.wait('@loginFailed')
+    cy.get('#error-msg').should('be.visible')
   })
 })

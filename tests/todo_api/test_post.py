@@ -6,6 +6,8 @@ from api.models_db import TodoDB
 from tests.todo_api.diagrams import post_diagram, negative_post_diagram
 from tests.todo_api.testdesign_tables import post_equivalence_table, post_boundary_table
 
+pytestmark = allure.parent_suite("001_API Tests (pytest)")
+
 _REQS = {
     "REQ-001": "Title skal have minimum 1 tegn",
     "REQ-002": "Title skal have maximum 500 tegn",

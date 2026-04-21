@@ -11,3 +11,5 @@ cypress/screenshots/
 cypress/videos/
 allure-results-*/
 allure-report-cypress/
+report.html
+assets/

@@ -1,6 +1,6 @@
 class RegisterPage {
   visit() {
-    cy.visit('/register')
+    cy.visit('/register.html')
   }
 
   enterCvr(cvr) {

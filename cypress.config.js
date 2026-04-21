@@ -1,4 +1,5 @@
 const { defineConfig } = require('cypress')
+const { allureCypress } = require('allure-cypress/reporter')
 
 module.exports = defineConfig({
   e2e: {
@@ -7,5 +8,11 @@ module.exports = defineConfig({
     viewportHeight: 720,
     video: false,
     screenshotOnRunFailure: true,
+    setupNodeEvents(on, config) {
+      allureCypress(on, config, {
+        resultsDir: process.env.ALLURE_RESULTS_DIR || 'allure-results-cypress',
+      })
+      return config
+    },
   },
 })

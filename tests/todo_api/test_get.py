@@ -11,6 +11,8 @@ from tests.todo_api.diagrams import (
 )
 from tests.todo_api.testdesign_tables import get_equivalence_table
 
+pytestmark = allure.parent_suite("001_API Tests (pytest)")
+
 _REQS = {
     "REQ-003": "Completed skal være boolean (true/false)",
     "REQ-004": "ID genereres automatisk og er unikt og positivt",

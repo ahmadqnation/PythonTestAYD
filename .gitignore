@@ -9,3 +9,5 @@ reports/
 node_modules/
 cypress/screenshots/
 cypress/videos/
+allure-results-*/
+allure-report-cypress/

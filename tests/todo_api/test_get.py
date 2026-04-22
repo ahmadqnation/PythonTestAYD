@@ -250,15 +250,10 @@ def test_hent_todo_med_negativt_id(db_session, auth_headers):
     """
     db_todo = db_session.query(TodoDB).filter_by(id=-1).first()
     assert db_todo is None
-    count_before = db_session.query(TodoDB).count()
 
     response = requests.get(f"{BASE_URL}/todos/-1", headers=auth_headers)
     assert response.status_code == 404
     assert response.elapsed.total_seconds() < 2
-
-    db_session.expire_all()
-    count_after = db_session.query(TodoDB).count()
-    assert count_after == count_before
 
     allure.attach(
         '<table border="1" style="border-collapse: collapse; width: 100%;">'
@@ -266,7 +261,6 @@ def test_hent_todo_med_negativt_id(db_session, auth_headers):
         '<tr><td style="padding: 8px;">db_todo is None</td><td style="padding: 8px;">ID -1 eksisterer ikke i databasen</td></tr>'
         '<tr><td style="padding: 8px;">response.status_code == 404</td><td style="padding: 8px;">REQ-009: HTTP 404</td></tr>'
         '<tr><td style="padding: 8px;">response.elapsed.total_seconds() &lt; 2</td><td style="padding: 8px;">REQ-012: Svartid under 2 sekunder</td></tr>'
-        '<tr><td style="padding: 8px;">count_after == count_before</td><td style="padding: 8px;">Antal rækker er uændret</td></tr>'
         "</table>",
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML

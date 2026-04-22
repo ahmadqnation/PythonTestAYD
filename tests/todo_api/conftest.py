@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
+from api.models_db_auth import UserDB
 
 load_dotenv()
 
@@ -45,6 +46,19 @@ def auth_token():
 @pytest.fixture(scope="session")
 def auth_headers(auth_token):
     return {"Authorization": f"Bearer {auth_token}"}
+
+
+@pytest.fixture(scope="session")
+def test_user_id():
+    database_url = os.getenv("DATABASE_URL")
+    engine = create_engine(database_url)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    user = session.query(UserDB).filter_by(email=TEST_EMAIL).first()
+    user_id = user.id
+    session.close()
+    engine.dispose()
+    return user_id
 
 
 @pytest.fixture

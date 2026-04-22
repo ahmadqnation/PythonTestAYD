@@ -1,4 +1,4 @@
-from locust import HttpUser, task, between
+from locust import HttpUser, task, between, LoadTestShape
 
 
 class TodoUser(HttpUser):
@@ -22,6 +22,23 @@ class TodoUser(HttpUser):
             "title": "Test todo opgave",
             "completed": False,
         }, headers=self.headers)
+
         if response.status_code == 201:
             todo_id = response.json().get("id")
             self.client.delete(f"/todos/{todo_id}", headers=self.headers, name="/todos/[id]")
+
+
+class EnduranceLoadShape(LoadTestShape):
+    # (stage_end_seconds, user_count, spawn_rate)
+    stages = [
+        (  60,  20,  5),  # Opvarmning: byg op til 20 brugere over 60 sek
+        (1860,  20,  1),  # Udholdenhed: hold 20 brugere stabilt i 30 min
+        (1920,   0,  5),  # Nedlukning: reducer til 0 over 60 sek
+    ]
+
+    def tick(self):
+        run_time = self.get_run_time()
+        for stage_end, users, spawn_rate in self.stages:
+            if run_time < stage_end:
+                return (users, spawn_rate)
+        return None

@@ -6,8 +6,8 @@ class TodoUser(HttpUser):
 
     def on_start(self):
         response = self.client.post("/auth/login", json={
-            "email": "testuser@test.dk",
-            "password": "Test1234!",
+            "email": "locust@test.dk",
+            "password": "Locust1234!",
         })
         token = response.json().get("access_token")
         self.headers = {"Authorization": f"Bearer {token}"}

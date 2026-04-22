@@ -6,8 +6,8 @@ class TodoUser(HttpUser):
 
     def on_start(self):
         response = self.client.post("/auth/login", json={
-            "email": "locust@test.dk",
-            "password": "Locust1234!",
+            "email": "testuser@test.dk",
+            "password": "Test1234!",
         })
         token = response.json().get("access_token")
         self.headers = {"Authorization": f"Bearer {token}"}
@@ -28,14 +28,14 @@ class TodoUser(HttpUser):
             self.client.delete(f"/todos/{todo_id}", headers=self.headers, name="/todos/[id]")
 
 
-class StepLoadShape(LoadTestShape):
+class SpikeLoadShape(LoadTestShape):
     # (stage_end_seconds, user_count, spawn_rate)
     stages = [
-        (120,  10,  5),
-        (240,  25, 10),
-        (360,  50, 15),
-        (480, 100, 20),
-        (600, 150, 25),
+        ( 30,  10,   5),  # Opvarmning: 10 brugere i 30 sek
+        ( 40, 200, 200),  # Spike: 200 brugere på 10 sek (spawn_rate=200 for hurtig stigning)
+        ( 70, 200,   1),  # Hold spike i 30 sek
+        ( 80,  10, 200),  # Fald tilbage til 10 brugere på 10 sek
+        (110,  10,   1),  # Stabilisering: 10 brugere i 30 sek
     ]
 
     def tick(self):

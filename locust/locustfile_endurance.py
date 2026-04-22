@@ -6,8 +6,8 @@ class TodoUser(HttpUser):
 
     def on_start(self):
         response = self.client.post("/auth/login", json={
-            "email": "locust@test.dk",
-            "password": "Locust1234!",
+            "email": "testuser@test.dk",
+            "password": "Test1234!",
         })
         token = response.json().get("access_token")
         self.headers = {"Authorization": f"Bearer {token}"}
@@ -28,14 +28,12 @@ class TodoUser(HttpUser):
             self.client.delete(f"/todos/{todo_id}", headers=self.headers, name="/todos/[id]")
 
 
-class StepLoadShape(LoadTestShape):
+class EnduranceLoadShape(LoadTestShape):
     # (stage_end_seconds, user_count, spawn_rate)
     stages = [
-        (120,  10,  5),
-        (240,  25, 10),
-        (360,  50, 15),
-        (480, 100, 20),
-        (600, 150, 25),
+        (  60,  20,  5),  # Opvarmning: byg op til 20 brugere over 60 sek
+        (1860,  20,  1),  # Udholdenhed: hold 20 brugere stabilt i 30 min
+        (1920,   0,  5),  # Nedlukning: reducer til 0 over 60 sek
     ]
 
     def tick(self):

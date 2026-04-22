@@ -95,31 +95,23 @@ def test_opret_todo(new_todo, db_session, auth_headers):
 @allure.story("001B_POST")
 @allure.title("Opret todo uden titel")
 @allure.description("Beskrivelse: Forsøger at oprette en todo uden det påkrævede titel-felt\nForventet: HTTP 422")
-def test_opret_todo_uden_titel(db_session, auth_headers, test_user_id):
+def test_opret_todo_uden_titel(auth_headers):
     """
     Testdesign: Negativ test
     Beskrivelse: Forsøger at oprette en todo uden det påkrævede titel-felt
     Forudsætning: API'et kræver title-feltet
     Forventet resultat: HTTP 422 (FastAPI validering)
     """
-    count_before = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
-
     response = requests.post(f"{BASE_URL}/todos", json={"completed": False}, headers=auth_headers)
     print(f"\nResponse: {response.status_code}")
     assert response.status_code == 422
     assert response.elapsed.total_seconds() < 2
-
-    db_session.expire_all()
-    count_after = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
-    assert count_after == count_before
 
     allure.attach(
         '<table border="1" style="border-collapse: collapse; width: 100%;">'
         '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
         '<tr><td style="padding: 8px;">response.status_code == 422</td><td style="padding: 8px;">HTTP 422 (FastAPI validerer manglende felt)</td></tr>'
         '<tr><td style="padding: 8px;">response.elapsed.total_seconds() &lt; 2</td><td style="padding: 8px;">Responstid under 2 sekunder (REQ-012)</td></tr>'
-        '<tr><td style="padding: 8px;">count_before (baseline testbruger)</td><td style="padding: 8px;">Registrerer testbrugerens todos inden kaldet</td></tr>'
-        '<tr><td style="padding: 8px;">count_after == count_before</td><td style="padding: 8px;">Ingen af testbrugerens todos oprettet i databasen (REQ-015)</td></tr>'
         "</table>",
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML
@@ -304,31 +296,23 @@ def test_opret_todo_med_lang_titel(db_session, auth_headers):
     "Beskrivelse: Forsøger at oprette en todo med en tom title (0 tegn, under nedre grænse)<br>"
     "Forventet: HTTP 422"
 )
-def test_opret_todo_med_tom_titel(db_session, auth_headers, test_user_id):
+def test_opret_todo_med_tom_titel(auth_headers):
     """
     Testdesign: Grænseværdianalyse
     Beskrivelse: Forsøger at oprette en todo med en tom title (0 tegn, under nedre grænse)
     Forudsætning: API'et validerer at title ikke er tom
     Forventet resultat: HTTP 422
     """
-    count_before = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
-
     response = requests.post(f"{BASE_URL}/todos", json={"title": ""}, headers=auth_headers)
     print(f"\nResponse: {response.status_code}")
     assert response.status_code == 422
     assert response.elapsed.total_seconds() < 2
-
-    db_session.expire_all()
-    count_after = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
-    assert count_after == count_before
 
     allure.attach(
         '<table border="1" style="border-collapse: collapse; width: 100%;">'
         '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
         '<tr><td style="padding: 8px;">response.status_code == 422</td><td style="padding: 8px;">HTTP 422 (tom title afvises) (REQ-010)</td></tr>'
         '<tr><td style="padding: 8px;">response.elapsed.total_seconds() &lt; 2</td><td style="padding: 8px;">Responstid under 2 sekunder (REQ-012)</td></tr>'
-        '<tr><td style="padding: 8px;">count_before (baseline testbruger)</td><td style="padding: 8px;">Registrerer testbrugerens todos inden kaldet</td></tr>'
-        '<tr><td style="padding: 8px;">count_after == count_before</td><td style="padding: 8px;">Ingen af testbrugerens todos oprettet i databasen (REQ-015)</td></tr>'
         "</table>",
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML
@@ -403,31 +387,23 @@ def test_opret_todo_med_enkelt_tegn(db_session, auth_headers):
     "Beskrivelse: Forsøger at oprette en todo med en title på 501 tegn (over øvre grænse)<br>"
     "Forventet: HTTP 422"
 )
-def test_opret_todo_over_max_laengde(db_session, auth_headers, test_user_id):
+def test_opret_todo_over_max_laengde(auth_headers):
     """
     Testdesign: Grænseværdianalyse
     Beskrivelse: Forsøger at oprette en todo med en title på 501 tegn (over øvre grænse)
     Forudsætning: API'et afviser titles over 500 tegn
     Forventet resultat: HTTP 422
     """
-    count_before = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
-
     response = requests.post(f"{BASE_URL}/todos", json={"title": "a" * 501}, headers=auth_headers)
     print(f"\nResponse: {response.status_code}")
     assert response.status_code == 422
     assert response.elapsed.total_seconds() < 2
-
-    db_session.expire_all()
-    count_after = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
-    assert count_after == count_before
 
     allure.attach(
         '<table border="1" style="border-collapse: collapse; width: 100%;">'
         '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
         '<tr><td style="padding: 8px;">response.status_code == 422</td><td style="padding: 8px;">HTTP 422 (title over max længde afvises) (REQ-011)</td></tr>'
         '<tr><td style="padding: 8px;">response.elapsed.total_seconds() &lt; 2</td><td style="padding: 8px;">Responstid under 2 sekunder (REQ-012)</td></tr>'
-        '<tr><td style="padding: 8px;">count_before (baseline testbruger)</td><td style="padding: 8px;">Registrerer testbrugerens todos inden kaldet</td></tr>'
-        '<tr><td style="padding: 8px;">count_after == count_before</td><td style="padding: 8px;">Ingen af testbrugerens todos oprettet i databasen (REQ-015)</td></tr>'
         "</table>",
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML

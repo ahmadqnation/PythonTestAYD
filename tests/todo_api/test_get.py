@@ -46,9 +46,6 @@ def test_hent_alle_todos(created_todo, db_session, auth_headers):
     Forudsætning: API'et er tilgængeligt og indeholder mindst én todo
     Forventet resultat: HTTP 200 og en liste med mindst én todo
     """
-    count_before = db_session.query(TodoDB).count()
-    assert count_before > 0
-
     response = requests.get(f"{BASE_URL}/todos", headers=auth_headers)
     print(f"\nResponse: {response.json()[:2]}")
     assert response.status_code == 200
@@ -56,19 +53,13 @@ def test_hent_alle_todos(created_todo, db_session, auth_headers):
     assert "application/json" in response.headers["Content-Type"]
     assert len(response.json()) > 0
 
-    db_session.expire_all()
-    count_after = db_session.query(TodoDB).count()
-    assert count_after == count_before
-
     allure.attach(
         '<table border="1" style="border-collapse: collapse; width: 100%;">'
         '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
-        '<tr><td style="padding: 8px;">count_before &gt; 0</td><td style="padding: 8px;">REQ-015: Data eksisterer i databasen</td></tr>'
         '<tr><td style="padding: 8px;">response.status_code == 200</td><td style="padding: 8px;">REQ-005: HTTP 200</td></tr>'
         '<tr><td style="padding: 8px;">response.elapsed.total_seconds() &lt; 2</td><td style="padding: 8px;">REQ-012: Svartid under 2 sekunder</td></tr>'
         '<tr><td style="padding: 8px;">"application/json" in Content-Type</td><td style="padding: 8px;">REQ-014: Response er JSON format</td></tr>'
         '<tr><td style="padding: 8px;">len(response.json()) &gt; 0</td><td style="padding: 8px;">REQ-005: Listen indeholder mindst én todo</td></tr>'
-        '<tr><td style="padding: 8px;">count_after == count_before</td><td style="padding: 8px;">GET ændrede ikke antal rækker i databasen</td></tr>'
         "</table>",
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML

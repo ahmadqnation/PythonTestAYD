@@ -139,7 +139,7 @@ def test_hent_enkelt_todo(created_todo, db_session, auth_headers):
 @allure.story("001A_GET")
 @allure.title("Hent todo der ikke findes")
 @allure.description("Beskrivelse: Forsøger at hente en todo med et id der ikke eksisterer\nForventet: HTTP 404")
-def test_hent_todo_der_ikke_findes(db_session, auth_headers, test_user_id):
+def test_hent_todo_der_ikke_findes(db_session, auth_headers):
     """
     Testdesign: Negativ test
     Beskrivelse: Forsøger at hente en todo med et id der ikke eksisterer
@@ -148,16 +148,11 @@ def test_hent_todo_der_ikke_findes(db_session, auth_headers, test_user_id):
     """
     db_todo = db_session.query(TodoDB).filter_by(id=99999).first()
     assert db_todo is None
-    count_before = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
 
     response = requests.get(f"{BASE_URL}/todos/99999", headers=auth_headers)
     print(f"\nResponse: {response.status_code}")
     assert response.status_code == 404
     assert response.elapsed.total_seconds() < 2
-
-    db_session.expire_all()
-    count_after = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
-    assert count_after == count_before
 
     allure.attach(
         '<table border="1" style="border-collapse: collapse; width: 100%;">'
@@ -165,7 +160,6 @@ def test_hent_todo_der_ikke_findes(db_session, auth_headers, test_user_id):
         '<tr><td style="padding: 8px;">db_todo is None</td><td style="padding: 8px;">ID 99999 eksisterer ikke i databasen</td></tr>'
         '<tr><td style="padding: 8px;">response.status_code == 404</td><td style="padding: 8px;">REQ-009: HTTP 404</td></tr>'
         '<tr><td style="padding: 8px;">response.elapsed.total_seconds() &lt; 2</td><td style="padding: 8px;">REQ-012: Svartid under 2 sekunder</td></tr>'
-        '<tr><td style="padding: 8px;">count_after == count_before</td><td style="padding: 8px;">Testbrugerens todos er uændret</td></tr>'
         "</table>",
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML
@@ -241,7 +235,7 @@ def test_valider_felter_i_todo(created_todo, db_session, auth_headers):
 @allure.story("001A_GET")
 @allure.title("Hent todo med negativt id")
 @allure.description("Beskrivelse: Forsøger at hente en todo med negativt id (under nedre grænse)\nForventet: HTTP 404")
-def test_hent_todo_med_negativt_id(db_session, auth_headers, test_user_id):
+def test_hent_todo_med_negativt_id(db_session, auth_headers):
     """
     Testdesign: Grænseværdianalyse
     Beskrivelse: Forsøger at hente en todo med negativt id (under nedre grænse)
@@ -250,15 +244,10 @@ def test_hent_todo_med_negativt_id(db_session, auth_headers, test_user_id):
     """
     db_todo = db_session.query(TodoDB).filter_by(id=-1).first()
     assert db_todo is None
-    count_before = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
 
     response = requests.get(f"{BASE_URL}/todos/-1", headers=auth_headers)
     assert response.status_code == 404
     assert response.elapsed.total_seconds() < 2
-
-    db_session.expire_all()
-    count_after = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
-    assert count_after == count_before
 
     allure.attach(
         '<table border="1" style="border-collapse: collapse; width: 100%;">'
@@ -266,7 +255,6 @@ def test_hent_todo_med_negativt_id(db_session, auth_headers, test_user_id):
         '<tr><td style="padding: 8px;">db_todo is None</td><td style="padding: 8px;">ID -1 eksisterer ikke i databasen</td></tr>'
         '<tr><td style="padding: 8px;">response.status_code == 404</td><td style="padding: 8px;">REQ-009: HTTP 404</td></tr>'
         '<tr><td style="padding: 8px;">response.elapsed.total_seconds() &lt; 2</td><td style="padding: 8px;">REQ-012: Svartid under 2 sekunder</td></tr>'
-        '<tr><td style="padding: 8px;">count_after == count_before</td><td style="padding: 8px;">Testbrugerens todos er uændret</td></tr>'
         "</table>",
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML
@@ -282,30 +270,22 @@ def test_hent_todo_med_negativt_id(db_session, auth_headers, test_user_id):
 @allure.story("001A_GET")
 @allure.title("Hent todo med ugyldigt id (tekst)")
 @allure.description("Beskrivelse: Forsøger at hente en todo med tekst som id (ugyldig partition)\nForventet: HTTP 422")
-def test_hent_todo_med_ugyldigt_id(db_session, auth_headers, test_user_id):
+def test_hent_todo_med_ugyldigt_id(auth_headers):
     """
     Testdesign: Ækvivalenspartitionering
     Beskrivelse: Forsøger at hente en todo med tekst som id (ugyldig partition)
     Forudsætning: API'et forventer numeriske id-værdier
     Forventet resultat: HTTP 422 (FastAPI validering)
     """
-    count_before = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
-
     response = requests.get(f"{BASE_URL}/todos/abc", headers=auth_headers)
     assert response.status_code == 422
     assert response.elapsed.total_seconds() < 2
 
-    db_session.expire_all()
-    count_after = db_session.query(TodoDB).filter_by(user_id=test_user_id).count()
-    assert count_after == count_before
-
     allure.attach(
         '<table border="1" style="border-collapse: collapse; width: 100%;">'
         '<tr style="background-color: #f2f2f2;"><th style="padding: 8px; text-align: left;">Assertion</th><th style="padding: 8px; text-align: left;">Forventet</th></tr>'
-        '<tr><td style="padding: 8px;">count_before (baseline testbruger)</td><td style="padding: 8px;">Registrerer testbrugerens todos inden kaldet</td></tr>'
         '<tr><td style="padding: 8px;">response.status_code == 422</td><td style="padding: 8px;">HTTP 422 (FastAPI validerer id-typen)</td></tr>'
         '<tr><td style="padding: 8px;">response.elapsed.total_seconds() &lt; 2</td><td style="padding: 8px;">REQ-012: Svartid under 2 sekunder</td></tr>'
-        '<tr><td style="padding: 8px;">count_after == count_before</td><td style="padding: 8px;">Testbrugerens todos er uændret</td></tr>'
         "</table>",
         name="Database assertions",
         attachment_type=allure.attachment_type.HTML

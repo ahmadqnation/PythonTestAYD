@@ -6,8 +6,6 @@ from zapv2 import ZAPv2
 TARGET    = "https://pythonayd-todo-api.onrender.com"
 ZAP_URL   = "http://localhost:8090"
 REPORT    = "zap/zap_report.html"
-PROXIES   = {"http": ZAP_URL, "https": ZAP_URL}
-
 zap = ZAPv2(proxies={"http": ZAP_URL, "https": ZAP_URL})
 
 
@@ -23,11 +21,13 @@ def poll(scan_id, scan_type):
         time.sleep(5)
 
 
-def via_zap(method, path, **kwargs):
-    """Kalder endpoint via ZAP proxy så ZAP lærer URL'en at kende."""
-    kwargs.setdefault("verify", False)
-    kwargs.setdefault("timeout", 30)
-    return requests.request(method, f"{TARGET}{path}", proxies=PROXIES, **kwargs)
+def seed_url(path):
+    """Lader ZAP's interne HTTP-klient besøge URL'en — replacer-reglen injicerer auth."""
+    try:
+        zap.core.access_url(url=f"{TARGET}{path}", followredirects=True)
+        print(f"      GET    {path} -> seedet")
+    except Exception as e:
+        print(f"      GET    {path} -> fejl: {e}")
 
 
 # 1) Login og hent JWT token
@@ -61,36 +61,34 @@ zap.replacer.add_rule(
 )
 print("      Authorization-header tilføjet til ZAP session")
 
-# 3) Seed alle kendte endpoints via ZAP proxy
-print("\n[2/6] Seeder kendte endpoints via ZAP proxy...")
+# 3) Seed alle kendte endpoints
+print("\n[2/6] Seeder kendte endpoints...")
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# Opret en test-todo og gem dens ID til brug i GET/PUT/DELETE
+# Opret test-todo direkte (uden ZAP proxy) for at få et ID til /todos/{id}
 todo_id = None
-r = via_zap("POST", "/todos", json={"title": "ZAP test todo", "completed": False}, headers=auth)
+r = requests.post(
+    f"{TARGET}/todos",
+    json={"title": "ZAP test todo", "completed": False},
+    headers=auth, timeout=30, verify=False
+)
 if r.status_code in (200, 201):
     todo_id = r.json().get("id")
     print(f"      POST /todos -> {r.status_code} (id={todo_id})")
 else:
     print(f"      POST /todos -> {r.status_code}")
 
-endpoints = [
-    ("GET",    "/health",                  {}),
-    ("GET",    "/auth/me",                 {"headers": auth}),
-    ("GET",    "/todos",                   {"headers": auth}),
-    ("POST",   "/auth/login",              {"json": {"email": "testuser@test.dk", "password": "Test1234!"}}),
-]
+# Seed via ZAP's interne HTTP-klient — replacer-reglen injicerer Authorization-header
+for path in ["/health", "/auth/me", "/todos"]:
+    seed_url(path)
 if todo_id:
-    endpoints += [
-        ("GET",    f"/todos/{todo_id}",    {"headers": auth}),
-        ("PUT",    f"/todos/{todo_id}",    {"headers": auth, "json": {"title": "ZAP opdateret", "completed": True}}),
-        ("DELETE", f"/todos/{todo_id}",    {"headers": auth}),
-    ]
+    seed_url(f"/todos/{todo_id}")
 
-for method, path, kwargs in endpoints:
-    r = via_zap(method, path, **kwargs)
-    print(f"      {method:6} {path} -> {r.status_code}")
+# Ryd op
+if todo_id:
+    requests.delete(f"{TARGET}/todos/{todo_id}", headers=auth, timeout=30, verify=False)
+    print(f"      DELETE /todos/{todo_id} -> ryddet op")
 
 # 4) Forbind
 print(f"\n[3/6] Forbinder til ZAP ({ZAP_URL})...")

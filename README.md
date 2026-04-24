@@ -238,3 +238,71 @@ locust -f locust/locustfile_shape.py --host https://pythonayd-todo-api.onrender.
 ### Webgrænseflade
 
 Alle tests starter en webgrænseflade på `http://localhost:8089` — åbn den i browseren for at starte og monitorere testen. Tests med `LoadTestShape` (spike, endurance, step) starter automatisk uden manuel konfiguration.
+
+---
+
+## OWASP ZAP Sikkerhedstest
+
+Projektet indeholder et automatiseret sikkerhedsscan med [OWASP ZAP](https://www.zaproxy.org/) der tester Todo API'et for kendte sårbarheder.
+
+### Forudsætninger
+
+- ZAP Python-klient installeret:
+
+```bash
+pip install zaproxy
+```
+
+- OWASP ZAP kørende og tilgængeligt på `http://localhost:8090`
+
+### Sådan virker scriptet
+
+`zap/zap_scan.py` udfører følgende 6 trin i rækkefølge:
+
+1. **Login** — Sender credentials til `/auth/login` og henter et JWT-token
+2. **JWT-injektion** — Konfigurerer ZAP til at sende `Authorization: Bearer <token>` på alle requests via Replacer-reglen
+3. **Seed endpoints** — Opretter og henter todos via ZAP's HTTP-proxy for at give spiderens startpunkter
+4. **Spider** — Kører ZAP's traditionelle spider for at kortlægge alle tilgængelige endpoints
+5. **Aktivt scan** — Udfører et fuldt aktivt scan mod alle fundne endpoints (SQLi, XSS, IDOR m.fl.)
+6. **HTML-rapport** — Genererer en struktureret rapport med alle fund og gemmer den som `zap/zap_report.html`
+
+### Start ZAP i daemon mode
+
+```bash
+zap.sh -daemon -port 8090 -config api.disablekey=true
+```
+
+> På Windows: brug `zap.bat` i stedet for `zap.sh`
+
+### Kør ZAP-scannet
+
+```bash
+python zap/zap_scan.py
+```
+
+### Manuel GUI-fremgangsmåde
+
+1. Åbn OWASP ZAP og sæt proxyen til `localhost:8090`
+2. Konfigurér din browser til at bruge ZAP som HTTP-proxy
+3. Log ind på `https://pythonayd-todo-api.onrender.com` manuelt via browseren — ZAP opfanger trafik automatisk
+4. Kør **Spider** fra *Tools → Spider* mod basis-URL'en
+5. Kør **Active Scan** fra *Tools → Active Scan*
+6. Generér rapport via *Report → Generate HTML Report*
+
+### Rapport
+
+Rapporten gemmes i [zap/zap_report.html](zap/zap_report.html) og indeholder en risiko-tabel med fund grupperet efter alvorlighedsgrad:
+
+| Risikoniveau | Beskrivelse |
+|--------------|-------------|
+| **High** | Kritiske sårbarheder der kræver øjeblikkelig handling |
+| **Medium** | Sårbarheder med moderat risiko |
+| **Low** | Mindre risici og bedste praksis-overtrædelser |
+| **Informational** | Informationsfund uden direkte sikkerhedsrisiko |
+
+### Testbruger
+
+| Felt | Værdi |
+|------|-------|
+| Email | `testuser@test.dk` |
+| Adgangskode | `Test1234!` |
